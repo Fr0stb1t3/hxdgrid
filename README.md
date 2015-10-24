@@ -107,7 +107,7 @@ $(function() {
 ```
 ### Development
 
-See a bug that needs fixing or an ugly bit of code that really needs fixing. Let me know at 
+See a bug that needs fixing or an ugly bit of code that really needs a cleanup. Let me know at antoni.hxd@gmail.com
 
 
 ### Todos
