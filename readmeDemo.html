@@ -37,9 +37,9 @@
     <div class="hxdItem">Unordered box</div>
     <div class="hxdItem">Unordered box</div>
     <div class="hxdItem">Unordered box</div>
-    <div class="hxdItem" data-hxd-date="30.10.2015">Fourth Box (date sort) </div>
+    <div class="hxdItem" data-hxd-date="30.11.2015">Fourth Box (date sort) </div>
     <div class="hxdItem" data-hxd-date="25.10.2015">Second Box (date sort) </div>
-    <div class="hxdItem" data-hxd-date="24.10.2015">First Box  (date sort) </div>
+    <div class="hxdItem" data-hxd-date="24.09.2015">First Box  (date sort) </div>
     <div class="hxdItem" data-hxd-date="29.10.2015">Third Box  (date sort) </div>
 </div>
 <button id="dateSort">Sort by date</button>
@@ -56,7 +56,7 @@
 			$('.hxOuter').hxdGrid(options);
 			var demoGrid = getHxGridObj(0); // Get the correct grid container object
 			$('#dateSort').click(function(){
-				demoGrid.orderByKey('date');
+				demoGrid.orderByDateKey('date' , false,'DESC');
 			});
 			$('#letterSort').click(function(){
 				demoGrid.orderByKey('letter');

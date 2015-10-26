@@ -527,6 +527,33 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 				}
 			});
 		},
+		orderByDateKey: function( key, hideOthers ,order, splitter, dateFormat ){
+			var order 			= order || 'ASC';
+			var splitter 		= splitter || '.';
+			var dateFormat 		= dateFormat || 'DD-MM-YYYY';
+			var hideOthers = hideOthers || false;
+			var set = this.grepItems(key).
+										sort(function(a, b){
+											var aDate = Date.parse( hxDateFormat(  a[key] , splitter , dateFormat ) );
+											var bDate = Date.parse( hxDateFormat(  b[key] , splitter , dateFormat ) );
+											if( order=='DESC' )
+												return aDate < bDate ;
+											else
+												return aDate > bDate ;
+										});
+			var ordered = [];
+			for( i = 0; i < set.length; i++ ){
+				ordered[i] = set[i].startPos;
+			}
+			for( i = 0; i < this.itemOrder.length; i++ ){
+				if(  ordered.indexOf(i) !=-1){}
+				else{
+					ordered.push(i);
+				}
+			}
+			this.itemOrder = ordered ;
+			this.reflowCells(this.itemOrder);
+		},
 		orderByKey: function( key, hideOthers ){
 			var hideOthers = hideOthers || false;
 			var set = this.grepItems(key).
@@ -716,6 +743,19 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
         }
         return o;
     }
+	function hxDateFormat(str,separator,format){
+		var formatOrder = {'MM':0,'YYYY':2 , 'DD':1};
+		var out =[];
+		var strArr 		= str.split(separator);
+		var formatArr 	= format.split('-');
+		for(var i = 0 ; i < formatArr.length ; i++  ){
+			//console.log('format '+formatOrder[formatArr[i]]);
+			//console.log('date '+strArr[i]);
+			out[formatOrder[formatArr[i]]] = strArr[i];
+		}
+		//console.log(out.join(" "));
+		return out.join(" ");
+	}
     function css2json(css) {
         var s = {};
         if (!css) return s;
