@@ -528,7 +528,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 			});
 		},
 		orderByDateKey: function( key, hideOthers ,order, splitter, dateFormat ){
-			var order 			= order || 'ASC';
+			var order 			= order || 'ascending';
 			var splitter 		= splitter || '.';
 			var dateFormat 		= dateFormat || 'DD-MM-YYYY';
 			var hideOthers = hideOthers || false;
@@ -536,7 +536,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 										sort(function(a, b){
 											var aDate = Date.parse( hxDateFormat(  a[key] , splitter , dateFormat ) );
 											var bDate = Date.parse( hxDateFormat(  b[key] , splitter , dateFormat ) );
-											if( order=='DESC' )
+											if( order=='descending' )
 												return aDate < bDate ;
 											else
 												return aDate > bDate ;
@@ -554,11 +554,16 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 			this.itemOrder = ordered ;
 			this.reflowCells(this.itemOrder);
 		},
-		orderByKey: function( key, hideOthers ){
+		orderByKey: function( key, hideOthers, order ){
+			var order 			= order || 'ascending';
 			var hideOthers = hideOthers || false;
 			var set = this.grepItems(key).
 										sort(function(a, b){
-											return a[key]>b[key]
+											if( order=='descending' ){
+												return a[key] < b[key];
+											}else{
+												return a[key] > b[key];
+											}
 										});
 			var ordered = [];
 			for( i = 0; i < set.length; i++ ){
