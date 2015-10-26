@@ -275,9 +275,12 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 				elem.style.opacity = "1";
 			}, delay);
 		},
+		forceVisible: function(){//IMPROVE
+			this.$elem.fadeIn("slow", "linear");
+		},
 		toggleVisible: function(speed){
-			var speed = speed || 'normal';
-			this.$elem.fadeToggle(speed);
+			var speed = speed || 'slow';
+			this.$elem.fadeToggle("slow", "linear");
 		},
 		isElementInViewport: function(xCor,yCor) {
 			el = this.$elem;
@@ -381,7 +384,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 		clipping: 0, 
 		resize: true,  
 		selector:  '.hxdItem',
-		itemOrder: [],
+		hiddenItems: [],
 		gridId: null,
 		cellStyle: 0 ,
 		cellOptions: {},
@@ -498,10 +501,10 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 		*/
 		reflowCells: function( itemOrder ) {
 			var _this = this;
-			/*
+			
 			if(( typeof _this.itemOrder === 'undefined') ){
 				_this.itemOrder=[];
-			}*/
+			}
 			for( i = 0;i < _this.items.length; i++ ){//iterates over
 				var k =  ( ( typeof itemOrder === 'undefined') || ( typeof itemOrder[i] === 'undefined') ) ? i : itemOrder[i] ; //  itemOrder[i]) || i;
 				
@@ -512,10 +515,16 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 						if( !isNaN(tCol) ) 
 							var yCor = _this.xyMap.yO[tCol % 2] (row - 1);// <-- calls a function
 						_this.items[k].moveTo(xCor,yCor);
+						if( 0 < _this.hiddenItems.indexOf(k)){
+							_this.items[k].toggleVisible();
+						}else{
+							_this.items[k].forceVisible();
+						}
 				}
 				_this.items[k].startPos = k;
 				_this.itemOrder[i] =  k;
 			}
+			console.log(_this.hiddenItems);
         },
 		grepItems: function(key,val){
 			return $.grep(this.items, function (hxI)
@@ -542,6 +551,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 												return aDate > bDate ;
 										});
 			var ordered = [];
+			var hidden = [];
 			for( i = 0; i < set.length; i++ ){
 				ordered[i] = set[i].startPos;
 			}
@@ -549,14 +559,20 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 				if(  ordered.indexOf(i) !=-1){}
 				else{
 					ordered.push(i);
+					if( hideOthers ){
+						hidden.push(i);
+					}
 				}
 			}
+			if( hideOthers )
+				this.hiddenItems = hidden ;
+			
 			this.itemOrder = ordered ;
 			this.reflowCells(this.itemOrder);
 		},
 		orderByKey: function( key, hideOthers, order ){
 			var order 			= order || 'ascending';
-			var hideOthers = hideOthers || false;
+			var hideOthers 		= hideOthers || false;
 			var set = this.grepItems(key).
 										sort(function(a, b){
 											if( order=='descending' ){
@@ -566,6 +582,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 											}
 										});
 			var ordered = [];
+			var hidden = [];
 			for( i = 0; i < set.length; i++ ){
 				ordered[i] = set[i].startPos;
 			}
@@ -573,8 +590,13 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 				if(  ordered.indexOf(i) !=-1){}
 				else{
 					ordered.push(i);
+					if( hideOthers ){
+						hidden.push(i);
+					}
 				}
 			}
+			if( hideOthers )
+				this.hiddenItems = hidden ;
 			this.itemOrder = ordered ;
 			this.reflowCells(this.itemOrder);
 		},
@@ -592,6 +614,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 			for( i = 0; i < this.itemOrder.length; i++ ){
 				this.itemOrder[i]=i;
 			}
+			this.hiddenItems = [];
 			this.reflowCells(this.itemOrder);
 		},
 		/**
