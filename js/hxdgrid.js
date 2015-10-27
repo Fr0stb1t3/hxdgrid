@@ -9,11 +9,6 @@
 **/
 /** Beta Version **/
 var jQuery = jQuery || (require && require('jquery'));
-/*
-var HxdHexModule 	= typeof HxdHexModule === 'undefined' 	? 0 : HxdHexModule;
-var HxdClipModule 	= typeof HxdClipModule === 'undefined' 	? 0 : HxdClipModule;
-var HxdClearProto 	= typeof HxdClearProto === 'undefined' 	? 0 : HxdClearProto;
-var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule; */
 var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoader;
 
 (function($) {
@@ -38,18 +33,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	
     /** Global vars **/
 	var gridIdCounter = 0;
-	
-	
-	/* Not so global variables */
-	/* To do: Encapsulate vars in the objects */
-    var reflowLock = true;
-    var resizeLock = true;
-	
 	/* Core Grid Object */
 	var HxdGrid =  function(jQuery, $el, options) {
 		var _this = this;
 		_this._id = gridIdCounter;
 		_this.$el= $el;
+		_this.resizeLock = true;
 		_this.items=[];
 		$el.addClass('hxdGridContainer');
 		_this.setOptions(options);
@@ -67,10 +56,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			} else {
 				timeout = false;
 				
-				if (resizeLock) {
-					resizeLock = false;
+				if (_this.resizeLock) {
+					_this.resizeLock = false;
 					_this.reflowHexRows(function() {
-						resizeLock = true;
+						_this.resizeLock = true;
 					});
 				}
 				//console.log('Done resizing');
@@ -86,8 +75,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		/*END Of messy Block */
 		gridIdCounter++;
 	};
-	
-
 	/* Core item object and prototype */
 	var HxdItem = function($elem,cellOptions) {
 		this.$elem = $elem;
@@ -113,7 +100,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		  
 		  if( typeof  options.cellBgColor !== 'undefined' && options.cellBgColor != 0)
 			  if( validHex(options.cellBgColor)  ){
-				  //console.log('valid color'+options.cellBgColor); 
 				  this.cellBgColor = ( options && options.cellBgColor );
 			  }else{
 				  //console.log('Error.Options.Invalid color ('+options.cellBgColor+') provided. Input ignored. Please provide a valid hex string');
@@ -127,7 +113,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			}
 		},
 		_passNodeAttributes: function(nNodeMap){
-			for( i = 0; i < nNodeMap.length; i++ ){
+			for( var i = 0,  len= nNodeMap.length; i < len; i++ ){
 				var node = nNodeMap.item(i);
 				if((node.name.indexOf("data-hxd-") > -1)){
 					this.addAttr(
@@ -144,7 +130,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				var styleCol = rgbToHexString( css( _this.$elem )['background-color']);
 				if( validHex( styleCol )  ){
 					_this.cellBgColor = styleCol;
-					_this.$elem.addClass('hxdColOverride');
+					//_this.$elem.addClass('hxdColOverride');
 					styleOver =  _this.colStyleOverride(_this);
 				}
 			}
@@ -336,62 +322,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
             ];
         }
 	}
-	
-	/**
-	* Optional imports follow here. They allow adding different behaviour to the item objects.
-	* This is controlled at the create stage of the grid prototype. 
-	* Depending on a preset (currently hard coded) condition, the grid object can implement the appropriate item object.
-	* Example in demo: Hex module & Hex module + Clip Module
-	**/
-	
-	/*
-		REPLACED WITH Module loader object. 
-			The module loader receives option parameters and returns the appropriate hxdObbject;
-
-	*/
-	/* IMPORT Rotated module
-	//if( HxdRModule !== 0 ){ Deprecated
-	//	addToProto( HxdItem , HxdRModule );
-	//}
-	/* IMPORT Clear module 
-	if( HxdClearProto !== 0 ){
-		HxdItem.prototype = HxdClearProto;
-	}
-	/* IMPORT Hex module
-	var hexModule = true;
-	if( HxdHexModule !== 0 ){
-		var HxdItemSquare = function($elem,cellOptions) {
-			this.$elem=$elem;
-			this.setOptions(cellOptions);
-			this.create(this);
-		}
-		extendProto( HxdItemSquare , HxdItem );			//add the core object to the prototype chain
-		addToProto( HxdItemSquare , HxdHexModule );		// adds the additional prototype attributes and methods
-	}else{
-		hexModule = false;
-	}
-	
-	if( HxdModuleLoader !== 0 ){
-		var modules  = HxdModuleLoader.modules
-		console.log(HxdModuleLoader);
-		for (var i in modules) {
-			console.log('Loading'+i);
-			console.log(modules[i]);
-		}
-	}
-	var clipModule = true;
-	if( HxdClipModule !== 0 ){
-		var HxdItemClip = function($elem,cellOptions) {
-			this.$elem = $elem;
-			this.setOptions( cellOptions );
-			this.create(this);
-		}
-		extendProto( HxdItemClip, HxdItem );//add the core object to the prototype chain
-		addToProto( HxdItemClip , HxdClipModule );// adds the additional prototype attributes and methods
-	}else{
-		clipModule = false;
-	}
-	*/
 	/* Core Grid prototype */
 	HxdGrid.prototype = {
 		_id: 0,
@@ -402,6 +332,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		selector:  '.hxdItem',
 		hiddenItems: [],
 		gridId: null,
+		reflowLock : true,
 		cellStyle: 0 ,
 		cellOptions: {},
 		setOptions: function(options) {
@@ -429,27 +360,11 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			_this._boundaryWrap(_this.$el,_this);
 			
 			_this.$el.find(_this.selector).each(function(i) {
-				if( HxdModuleLoader !== 0 ){
+				if( HxdModuleLoader !== 0 ){ //If module loader is present use it to get the correct hxdItem object
 					_this.items[i] = HxdModuleLoader.moduleSelect( _this , _this.cellOptions, $(this) , HxdItem );
 				}else{
 					_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); 
 				}
-				/* HardCoded version
-				else if(hexModule && _this.hexMode){
-					if( clipModule && _this.clipping && $(this).hasClass("hxdClip") ){ // add control option to enable clipping for all  //classList.contains
-						_this.items[i] =  new HxdItemClip( $(this) , _this.cellOptions); //new HxdItem($(this), _this.cellOptions);
-					}
-					else if( clipModule && _this.clipping  && $(this).find('img').length != 0 ){//add control option to disable clipping
-						_this.items[i] =  new HxdItemClip( $(this) , _this.cellOptions); 
-					}
-					else{
-						_this.items[i] =  new HxdItemSquare( $(this) , _this.cellOptions);
-					}
-				}
-				else{//default non clipping object	
-					_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); //new HxdItem($(this), _this.cellOptions);
-				}*/
-				
 				_this.items[i]._id = _this._id + '@'+i;
 				_this.items[i]._passNodeAttributes( $(this).get(0).attributes );//Used for sorting
 			});
@@ -502,15 +417,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		* 	When there is a change in the amount of rows it calls reflowCells passing the current order of elements
 		*/
 		reflowHexRows:function(_callback) {
-            if( reflowLock ) {
-                reflowLock = false; //First check
+            if( this.reflowLock ) {
+                this.reflowLock = false; //First check
                 this.xyMap = this.mapGrid();
                 if (this.reflowLevel != this.xyMap.rows) { //Second check
                     this._prepContainer();
                     reflowLevel = this.xyMap.rows;
 					this.reflowCells( this.itemOrder );
                 }
-                reflowLock = true;
+                this.reflowLock = true;
 				
 				if (typeof  _callback!== 'undefined'){
 					_callback();
@@ -531,7 +446,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			if(( typeof _this.itemOrder === 'undefined') ){
 				_this.itemOrder=[];
 			}
-			for( i = 0;i < _this.items.length; i++ ){//iterates over
+			for( var i = 0,  len=  _this.items.length; i < len; i++ ){//iterates over
 				var k =  ( ( typeof itemOrder === 'undefined') || ( typeof itemOrder[i] === 'undefined') ) ? i : itemOrder[i] ; //  itemOrder[i]) || i;
 				
 				if( typeof  _this.xyMap.cols!== 'undefined' || _this.xyMap.cols != 0 ){
@@ -579,10 +494,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 										});
 			var ordered = [];
 			var hidden = [];
-			for( i = 0; i < set.length; i++ ){
+			for(var i = 0,  len = set.length; i < len; i++ ){
 				ordered[i] = set[i].startPos;
 			}
-			for( i = 0; i < this.itemOrder.length; i++ ){
+			for(var i = 0,  len = this.itemOrder.length; i < this.itemOrder.length; i++ ){
 				if(  ordered.indexOf(i) !=-1){}
 				else{
 					ordered.push(i);
@@ -610,10 +525,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 										});
 			var ordered = [];
 			var hidden = [];
-			for( i = 0; i < set.length; i++ ){
+			for(var i = 0,  len = set.length; i < len; i++ ){
 				ordered[i] = set[i].startPos;
 			}
-			for( i = 0; i < this.itemOrder.length; i++ ){
+			for(var i = 0,  len= this.itemOrder.length; i < len; i++ ){
 				if(  ordered.indexOf(i) !=-1){}
 				else{
 					ordered.push(i);
@@ -638,7 +553,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			this.reflowCells(io);
 		},
 		resetOrder: function(){
-			for( i = 0; i < this.itemOrder.length; i++ ){
+			for( var i = 0,  len= this.itemOrder.length; i < len; i++ ){
 				this.itemOrder[i]=i;
 			}
 			this.hiddenItems = [];
@@ -739,19 +654,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					.items[ parseInt(ids[0]) ];
 		}
 	}
-	/* OOP Control functions*/
-	function extendProto(obj, superobj){
-		obj.prototype = { __proto__ :superobj.prototype}
-	}
-	function addToProto(coreObj,extraObj){
-		for (var key in extraObj) {
-			coreObj.prototype[key] = extraObj[key];
-		}
-	}
-	function overProto(obj, proto){
-		obj.prototype = proto;
-	}
-	
 	/* General purpose functions */
 	function validHex(inp){
 		return (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(inp));
@@ -779,7 +681,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	function msort(inp) {
 		var mid = (inp.length / 2) << 0;
 		if(!mid) return inp;
-		
 		return merge(
 			msort(inp.slice(0, mid)),
 			msort(inp.slice(mid)));
@@ -803,12 +704,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		var out =[];
 		var strArr 		= str.split(separator);
 		var formatArr 	= format.split('-');
-		for(var i = 0 ; i < formatArr.length ; i++  ){
-			//console.log('format '+formatOrder[formatArr[i]]);
-			//console.log('date '+strArr[i]);
+		for(var i = 0 ,  len= formatArr.length; i < len ; i++  ){
 			out[formatOrder[formatArr[i]]] = strArr[i];
 		}
-		//console.log(out.join(" "));
 		return out.join(" ");
 	}
     function css2json(css) {

@@ -32,7 +32,7 @@ var HxdHexModule = (function() {
 			
 			if( typeof styleCol !== 'undefined'  && validHex( styleCol )  ){
 				_this.cellBgColor = styleCol;
-				_this.$elem.addClass('hxdColOverride');
+				//_this.$elem.addClass('hxdColOverride');
 				styleOver =  _this.hexStyleOverride(_this);
 			}
 			
