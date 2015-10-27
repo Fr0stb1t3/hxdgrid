@@ -124,7 +124,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			}
 		},
 		create: function(_this, hxScale) {
-			console.log( 'square' );
 			var styleOver ='';
 			if( typeof  css(_this.$elem)[ 'background-color' ]!== 'undefined' ){
 				var styleCol = rgbToHexString( css( _this.$elem )['background-color']);
@@ -227,8 +226,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					if(  $elem.get(0).style.left != xPx )
 						delayedX($elem.get(0) ,xPx ,1000);
 				}
-				
-				
 			}
 			function delayedY( elem, top,delay ) {// To Do Move
 				var delay = typeof delay==='undefined' ? 1000 : delay;
@@ -285,8 +282,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var rect = el[ 0 ].getBoundingClientRect();
 			var visOffset = 0; //Fix
 			//console.log( rect );
-			var tO =  parseInt(el[0].style.top) - yCor;
-			var lO =   parseInt(el[0].style.left) - xCor ;
+			var tO = parseInt(el[0].style.top) - yCor;
+			var lO = parseInt(el[0].style.left) - xCor ;
 			if(this.startPos ==10){
 				console.log( '----Element-----' );
 				console.log( parseInt(el[0].style.top) );
@@ -375,6 +372,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					console.log('OPS one item in the grid. Are you sure you have it on the right dom element');
 				}
 				_this.cellStyle =  css( _this.items[sK].$elem ); //Used in mapGrid
+				
+				console.log( css( _this.items[sK].$elem ) );
 				if(( typeof _this.cellStyle.height === 'undefined') ){
 					_this.cellStyle.height = _this.cellStyle.width;
 				}
@@ -466,7 +465,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				_this.items[k].startPos = k;
 				_this.itemOrder[i] =  k;
 			}
-			console.log(_this.hiddenItems);
         },
 		grepItems: function(key,val){
 			return $.grep(this.items, function (hxI)
@@ -573,8 +571,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				w = cont.width();
 			var items = this.items.length//(cont.find(this.selector)).length;
 			
-			var mrgL = parseInt(this.cellStyle['margin-left'] || 0);
-			var xOffset = parseInt(this.cellStyle.width) + ( mrgL );
+			var mrgL = parseInt(this.cellStyle['margin-left'] || 0),
+				mrgR = parseInt(this.cellStyle['margin-right'] || 0);
+				
+			var xOffset = parseInt(this.cellStyle.width) + ( mrgL ); + ( mrgR );
 			var cols = Math.floor(w / xOffset);
 			
 			var xInd = (w - ((cols) * xOffset) ) / 2;
@@ -597,18 +597,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			};
 		}
 	}
-	
-	function delayedOpacityShift( elem, op,delay, xCor, yCor ) {
-		var delay = typeof delay==='undefined' ? 1000 : delay;
-		setTimeout(function () {
-			var xPx = xCor+'px';
-			var yPx = yCor+'px';
-			elem.style.left = xPx;
-			elem.style.top  = yPx
-			elem.style.opacity = "1";
-		}, delay);
-	}
-	
 	function whichTransitionEvent(){
 		var t;
 		var el = document.createElement('fakeelement');
@@ -685,20 +673,40 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			msort(inp.slice(0, mid)),
 			msort(inp.slice(mid)));
 	}
-    function css(a) { // <-- Inefficient.Goes though all stylesheets . Will pose a problem for scalability. To do, Replace
-        var sheets = document.styleSheets,
-            o = {};
-        for (var i in sheets) {
-            var rules = sheets[i].rules || sheets[i].cssRules;
-            for (var r in rules) {
-                if (a.is(rules[r].selectorText)) {
-                    o = $.extend(o, css2json(rules[r].style), css2json(
-                        a.attr('style')));
-                }
-            }
-        }
-        return o;
+    function css(a) { //Improved Version. Gets the computed style for the properties which may affect the grid object
+		//Current Input jquery object. Future change would be for the function will not use the dom object directly
+		var propArr = ['width',
+				'height',
+				'opacity',
+				'background-image',
+				'background-repeat',
+				'background-position',
+				'background-color',
+				'margin-right',
+				'margin-left',
+				'margin-top',
+				'margin-bottom'];//relevant properties
+		return  getStyleProperties(a.get(0),propArr) ;
+	
     }
+	function getStyleProperties (el, propArr) {
+		var outJSON = {}
+		for(var i = 0,  len = propArr.length; i<len; i++){
+			if (getComputedStyle !== 'undefined') {
+				outJSON[ propArr[i] ] = getComputedStyle(el, null).getPropertyValue(propArr[i]);//;
+			} else {
+				outJSON[ propArr[i] ] = el.currentStyle[propArr[i]];
+			}
+		}
+		return outJSON;
+	}
+	function getStyleProperty (el, prop) {
+		if (getComputedStyle !== 'undefined') {
+			return getComputedStyle(el, null).getPropertyValue(prop);//;
+		} else {
+			return el.currentStyle[prop];
+		}
+	}
 	function hxDateFormat(str,separator,format){
 		var formatOrder = {'MM':0,'YYYY':2 , 'DD':1};
 		var out =[];
@@ -709,25 +717,5 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		}
 		return out.join(" ");
 	}
-    function css2json(css) {
-        var s = {};
-        if (!css) return s;
-        if (css instanceof CSSStyleDeclaration) {
-            for (var i in css) {
-                if ((css[i])
-                    .toLowerCase) {
-                    s[(css[i])
-                        .toLowerCase()] = (css[css[i]]);
-                }
-            }
-        } else if (typeof css == "string") {
-            css = css.split("; ");
-            for (var i in css) {
-                var l = css[i].split(": ");
-                s[l[0].toLowerCase()] = (l[1]);
-            }
-        }
-        return s;
-    }
 })(jQuery);
 

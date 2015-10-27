@@ -18,16 +18,14 @@ var HxdHexModule = (function() {
 	},
 	protoOb :{
 		create: function(_this, hxScale) {
-			var styleOver ='';
-			var classVar = 'hxHex';
-			var inlineBG = _this.$elem.get(0).style[ 'background-color' ];
-			
-			if( typeof  css(_this.$elem)[ 'background-color' ]!== 'undefined' ){
-				var styleCol = rgbToHexString( css( _this.$elem )['background-color']) ;
+			var styleOver ='',
+				classVar = 'hxHex',
+				inlineBG = _this.$elem.get(0).style[ 'background-color' ],
+				bgCSS = css(_this.$elem)[ 'background-color' ];
+			if( typeof  bgCSS!== 'undefined' && bgCSS!=='transparent'){
+				var styleCol = rgbToHexString( bgCSS ) ;
 			}else if(typeof inlineBG!== 'undefined' &&inlineBG.length > 13 ){
-				
 				var styleCol = rgbToHexString( inlineBG ) ;
-				
 			}
 			
 			if( typeof styleCol !== 'undefined'  && validHex( styleCol )  ){
@@ -78,39 +76,37 @@ function rgbToHexString(string) {
 	function validHex(inp){
 		return (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(inp));
 	}
-	  function css(a) { // <-- Inefficient.Goes though all stylesheets . Will pose a problem for scalability. To do, Replace
-        var sheets = document.styleSheets,
-            o = {};
-        for (var i in sheets) {
-            var rules = sheets[i].rules || sheets[i].cssRules;
-            for (var r in rules) {
-                if (a.is(rules[r].selectorText)) {
-                    o = $.extend(o, css2json(rules[r].style), css2json(
-                        a.attr('style')));
-                }
-            }
-        }
-        return o;
+	function css(a) { // <-- Inefficient.Goes though all stylesheets . Will pose a problem for scalability. To do, Replace
+		var propArr = ['width',
+				'height',
+				'opacity',
+				'background-image',
+				'background-repeat',
+				'background-position',
+				'background-color',
+				'margin-right',
+				'margin-left',
+				'margin-top',
+				'margin-bottom'];//relevant properties
+		return  getStyleProperties(a.get(0),propArr) ;
     }
-
-    function css2json(css) {
-        var s = {};
-        if (!css) return s;
-        if (css instanceof CSSStyleDeclaration) {
-            for (var i in css) {
-                if ((css[i])
-                    .toLowerCase) {
-                    s[(css[i])
-                        .toLowerCase()] = (css[css[i]]);
-                }
-            }
-        } else if (typeof css == "string") {
-            css = css.split("; ");
-            for (var i in css) {
-                var l = css[i].split(": ");
-                s[l[0].toLowerCase()] = (l[1]);
-            }
-        }
-        return s;
-    }
+	function getStyleProperties (el, propArr) {
+		var outJSON = {}
+		for(var i = 0,  len = propArr.length; i<len; i++){
+			if (getComputedStyle !== 'undefined') {
+				outJSON[ propArr[i] ] = getComputedStyle(el, null).getPropertyValue(propArr[i]);//;
+			} else {
+				outJSON[ propArr[i] ] = el.currentStyle[propArr[i]];
+			}
+		}
+		return outJSON;
+	}
+	function getStyleProperty (el, prop) {
+		if (getComputedStyle !== 'undefined') {
+			return getComputedStyle(el, null).getPropertyValue(prop);//;
+		} else {
+			return el.currentStyle[prop];
+		}
+	}
+	
 })();
