@@ -11,14 +11,51 @@
 
 <link rel="stylesheet" href="../css/hxdgrid.css">
 <link rel="stylesheet" href="../css/hxdgrid-hex.css">
-
+<!--
+<script src="../js/hxdHexModule.js" type="text/javascript"></script>
+<script src="../js/hxdClipModule.js" type="text/javascript"></script>
+-->
 <script src="../js/hxdClipModule.js" type="text/javascript"></script>
 <script src="../js/hxdHexModule.js" type="text/javascript"></script>
 <script src="../js/hxdModuleLoader.js" type="text/javascript"></script>
 <script src="../js/hxdgrid.js" type="text/javascript"></script>
+
 </head>
 <body> 
+	<div>
+		This example requires both module scripts to work correctly
+	</div>
 	<div class="hexGrid2">
+		<div class="hxdItem "><img src="images/pexels-photo-12255-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/food-wood-coffee-mug-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem ">StandartHex</div>
+		<div class="hxdItem "><img src="images/pexels-photo-11744-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-11942-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-12064-large.jpg" alt="" class="scale"/></div>
+	
+		<div class="hxdItem ">StandartHex text block</div>
+		<div class="hxdItem "><img src="images/pexels-photo-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-12255-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/food-wood-coffee-mug-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/Life-of-Pix-free-stock-photos-sunset-sea-light-mikewilson-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-11744-large.jpg" alt="" class="scale"/></div>
+		
+		<div class="hxdItem ">StandartHex</div>
+		<div class="hxdItem ">StandartHex</div>
+		<div class="hxdItem ">StandartHex</div>
+		<div class="hxdItem ">StandartHex</div>
+		<div class="hxdItem ">StandartHex</div>
+		<div class="hxdItem "><img src="images/pexels-photo-12064-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-12255-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-12255-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/food-wood-coffee-mug-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/Life-of-Pix-free-stock-photos-sunset-sea-light-mikewilson-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-11744-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-11942-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-12064-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-12255-large.jpg" alt="" class="scale"/></div>
+		<div class="hxdItem "><img src="images/pexels-photo-large.jpg" alt="" class="scale"/></div>
 		<div class="hxdItem "><img src="images/pexels-photo-12255-large.jpg" alt="" class="scale"/></div>
 		<div class="hxdItem "><img src="images/food-wood-coffee-mug-large.jpg" alt="" class="scale"/></div>
 		<div class="hxdItem "><img src="images/Life-of-Pix-free-stock-photos-sunset-sea-light-mikewilson-large.jpg" alt="" class="scale"/></div>
@@ -47,11 +84,6 @@
 				cellBgColor:  '#x'
 			};
 		$('.hexGrid2').hxdGrid(optionsHex);
-		var item = getHxItemById('00@00');
-		var item2 = getHxItemById('12@00');
-		var timer = setInterval(function() { 
-			  item.swapPos(item2);
-		}, 1000);/**/
 	});
 	</script>	
 </body>

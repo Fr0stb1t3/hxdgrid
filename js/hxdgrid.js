@@ -9,11 +9,12 @@
 **/
 /** Beta Version **/
 var jQuery = jQuery || (require && require('jquery'));
-
+/*
 var HxdHexModule 	= typeof HxdHexModule === 'undefined' 	? 0 : HxdHexModule;
 var HxdClipModule 	= typeof HxdClipModule === 'undefined' 	? 0 : HxdClipModule;
 var HxdClearProto 	= typeof HxdClearProto === 'undefined' 	? 0 : HxdClearProto;
-var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
+var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule; */
+var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoader;
 
 (function($) {
 	  
@@ -342,15 +343,21 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 	* Depending on a preset (currently hard coded) condition, the grid object can implement the appropriate item object.
 	* Example in demo: Hex module & Hex module + Clip Module
 	**/
-	/* IMPORT Rotated module*/
+	
+	/*
+		REPLACED WITH Module loader object. 
+			The module loader receives option parameters and returns the appropriate hxdObbject;
+
+	*/
+	/* IMPORT Rotated module
 	//if( HxdRModule !== 0 ){ Deprecated
 	//	addToProto( HxdItem , HxdRModule );
 	//}
-	/* IMPORT Clear module */
+	/* IMPORT Clear module 
 	if( HxdClearProto !== 0 ){
 		HxdItem.prototype = HxdClearProto;
 	}
-	/* IMPORT Hex module*/
+	/* IMPORT Hex module
 	var hexModule = true;
 	if( HxdHexModule !== 0 ){
 		var HxdItemSquare = function($elem,cellOptions) {
@@ -359,11 +366,19 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 			this.create(this);
 		}
 		extendProto( HxdItemSquare , HxdItem );			//add the core object to the prototype chain
-		addToProto( HxdItemSquare , HxdHexModule );	// adds the additional prototype attributes and methods
+		addToProto( HxdItemSquare , HxdHexModule );		// adds the additional prototype attributes and methods
 	}else{
 		hexModule = false;
 	}
-	/* IMPORT Clip module*/
+	
+	if( HxdModuleLoader !== 0 ){
+		var modules  = HxdModuleLoader.modules
+		console.log(HxdModuleLoader);
+		for (var i in modules) {
+			console.log('Loading'+i);
+			console.log(modules[i]);
+		}
+	}
 	var clipModule = true;
 	if( HxdClipModule !== 0 ){
 		var HxdItemClip = function($elem,cellOptions) {
@@ -376,6 +391,7 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 	}else{
 		clipModule = false;
 	}
+	*/
 	/* Core Grid prototype */
 	HxdGrid.prototype = {
 		_id: 0,
@@ -413,7 +429,13 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 			_this._boundaryWrap(_this.$el,_this);
 			
 			_this.$el.find(_this.selector).each(function(i) {
-				if(hexModule && _this.hexMode){
+				if( HxdModuleLoader !== 0 ){
+					_this.items[i] = HxdModuleLoader.moduleSelect( _this , _this.cellOptions, $(this) , HxdItem );
+				}else{
+					_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); 
+				}
+				/* HardCoded version
+				else if(hexModule && _this.hexMode){
 					if( clipModule && _this.clipping && $(this).hasClass("hxdClip") ){ // add control option to enable clipping for all  //classList.contains
 						_this.items[i] =  new HxdItemClip( $(this) , _this.cellOptions); //new HxdItem($(this), _this.cellOptions);
 					}
@@ -426,7 +448,8 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 				}
 				else{//default non clipping object	
 					_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); //new HxdItem($(this), _this.cellOptions);
-				}
+				}*/
+				
 				_this.items[i]._id = _this._id + '@'+i;
 				_this.items[i]._passNodeAttributes( $(this).get(0).attributes );//Used for sorting
 			});
@@ -437,6 +460,9 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 					console.log('OPS one item in the grid. Are you sure you have it on the right dom element');
 				}
 				_this.cellStyle =  css( _this.items[sK].$elem ); //Used in mapGrid
+				if(( typeof _this.cellStyle.height === 'undefined') ){
+					_this.cellStyle.height = _this.cellStyle.width;
+				}
 			}
 			_this.xyMap = _this.mapGrid(),
 			_this._prepContainer();
@@ -509,17 +535,18 @@ var HxdRModule 		= typeof HxdRModule === 'undefined' 	? 0 : HxdRModule;
 				var k =  ( ( typeof itemOrder === 'undefined') || ( typeof itemOrder[i] === 'undefined') ) ? i : itemOrder[i] ; //  itemOrder[i]) || i;
 				
 				if( typeof  _this.xyMap.cols!== 'undefined' || _this.xyMap.cols != 0 ){
+					if( 0 < _this.hiddenItems.indexOf(k)){
+							_this.items[k].toggleVisible();
+						}else{
+							_this.items[k].forceVisible();
+						}
+						
 					var row = Math.ceil((i + 1) / _this.xyMap.cols),
 						tCol = ( (i) % _this.xyMap.cols ),
 						xCor = (tCol) * _this.xyMap.xO + _this.xyMap.xIndent;
 						if( !isNaN(tCol) ) 
 							var yCor = _this.xyMap.yO[tCol % 2] (row - 1);// <-- calls a function
 						_this.items[k].moveTo(xCor,yCor);
-						if( 0 < _this.hiddenItems.indexOf(k)){
-							_this.items[k].toggleVisible();
-						}else{
-							_this.items[k].forceVisible();
-						}
 				}
 				_this.items[k].startPos = k;
 				_this.itemOrder[i] =  k;

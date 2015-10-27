@@ -10,6 +10,9 @@
 <!--<script src="dep/jquery-1.5.2.min.js" type="text/javascript"></script>-->
 
 <link rel="stylesheet" href="css/hxdgrid.css">
+<link rel="stylesheet" href="css/hxdgrid-hex.css">
+<script src="js/hxdHexModule.js" type="text/javascript"></script>
+<script src="js/hxdModuleLoader.js" type="text/javascript"></script>
 <script src="js/hxdgrid.js" type="text/javascript"></script>
 <style>
 .hxdItem {
@@ -51,6 +54,7 @@
 	<script>
 		$(function() {
 			var options  = {
+				hexMode: true, 
 				selector:  '.hxdItem'//default selector
 			};
 			$('.hxOuter').hxdGrid(options);
@@ -59,7 +63,7 @@
 				demoGrid.orderByDateKey('date' , false , 'DESC' );
 			});
 			$('#letterSort').click(function(){
-				demoGrid.orderByKey('letter' , false , 'DESC' );
+				demoGrid.orderByKey('letter' , true , 'DESC' );
 			});
 			$('#resetOrder').click(function(){
 				demoGrid.resetOrder();

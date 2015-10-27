@@ -7,16 +7,7 @@
 	Github site: 
 **/
 var HxdHexModule = (function() {
-	return { 
-	HxdCondition: function( gridObject, cellOptions, $elem ){
-		return gridObject.hexMode;
-	},
-	constOb: function($elem,cellOptions) {
-			this.$elem=$elem;
-			this.setOptions(cellOptions);
-			this.create(this);
-	},
-	protoOb :{
+	return HxdHexProto= {
 		create: function(_this, hxScale) {
 			var styleOver ='';
 			var classVar = 'hxHex';
@@ -59,10 +50,8 @@ var HxdHexModule = (function() {
 			return '';
 		}
 	}
-}
-
-
-function rgbToHexString(string) {
+	
+	function rgbToHexString(string) {
 		 var RGB = string.split("(")[1].split(")")[0].split(",");
 		 return rgbToHex( RGB[0], RGB[1], RGB[2] );
 	}
@@ -113,4 +102,5 @@ function rgbToHexString(string) {
         }
         return s;
     }
+	
 })();
