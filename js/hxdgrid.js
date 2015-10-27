@@ -79,6 +79,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	var HxdItem = function($elem,cellOptions) {
 		this.$elem = $elem;
 		this.cssAnim = true;
+		if( msieversion() ){//IE FIX disable CSS animations
+			this.cssAnim = false;
+		}
 		this.harwareAccelaration = false;//Triggers the hardware acceleration css
 		this.setOptions(cellOptions);
 		this.create(this);
@@ -91,7 +94,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		startPos: null,
 		cellBgColor: 0,
 		hexMode: false,
-		viewportFading: false,
+		viewportFading: true,
 		xCor: 0,
 		yCor: 0,
 		setOptions: function(options) {
@@ -135,7 +138,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			}
 			modeVar='hxDefault';
 			_this.$elem.wrapInner(
-				"<div class='hxMiddle "+modeVar+"' "+styleOver[0]+"><div class='inner'></div></div>"
+				"<div class='hxMiddle "+modeVar+"' "+styleOver+"><div class='inner'></div></div>"
 			);
 			
 		},
@@ -158,19 +161,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		},
 		colStyleOverride: function( _this ){
 			if( typeof  _this.cellBgColor !== 'undefined' && _this.cellBgColor !==0){
-			return [
-				 'style="background:' + _this.cellBgColor+'"',
-				 "style='border-right-color:" + _this.cellBgColor+ "'",
-				 "style='border-left-color:" + _this.cellBgColor+ "'" ];
+				return 'style="background:' + _this.cellBgColor+'"';
 			}
-			return '';
 		},
 		moveTo: function( xCor, yCor, $elem ) {
 			var $elem = $elem || this.$elem;
 			var xCor = xCor;  
 			var yCor = yCor;  
 			if ( (typeof $elem.attr('style') !== 'undefined') && $elem.get(0).style.position=='absolute' ) { 
-				if ( this.isElementInViewport(xCor, yCor ) || !this.viewportFading  ) {//this.isElementInViewport()
+				if ( this.moveInViewport( xCor, yCor ) || !this.viewportFading ) {//this.isElementInViewport()
 					this.animateOver(xCor, yCor );
 				}else{
 					if (this.cssAnim) {
@@ -204,7 +203,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 						.animate({ top: yCor }, 'normal');
 				}
 			}else{
-				if(this.harwareAccelaration){
+				if( this.harwareAccelaration ){
 					$elem.get(0).style.WebkitTransform  = "  translate3d(0, 0, 0)";
 					$elem.get(0).style.MozTransform = "  translate3d(0, 0, 0) ";// ease-out// ease
 					$elem.get(0).style.transform = " translate3d(0, 0, 0) ";
@@ -214,7 +213,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				$elem.get(0).style.transition = " all 1s ease  ";
 				var xPx = xCor+'px';
 				var yPx = yCor+'px';
-				if ($elem.position() < yCor) {
+				if ( $elem.position() < yCor ) {
 					if(  $elem.get(0).style.left != xPx )
 						$elem.get(0).style.left = xPx;
 					
@@ -228,13 +227,13 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				}
 			}
 			function delayedY( elem, top,delay ) {// To Do Move
-				var delay = typeof delay==='undefined' ? 1000 : delay;
+				var delay = typeof delay === 'undefined' ? 1000 : delay;
 				setTimeout( function () {
 						elem.style.top = top ;
 					}, delay);
 			}
 			function delayedX( elem, left,delay ) {// To Do Move
-				var delay = typeof delay==='undefined' ? 1000 : delay;
+				var delay = typeof delay === 'undefined' ? 1000 : delay;
 				setTimeout( function () {
 						elem.style.left = left ;
 					}, delay);
@@ -277,34 +276,19 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				rect.right <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) /*or $(window).width() */
 			);
 		 },
-		 moveInViewport: function(xCor,yCor){ /* TO DO  */
+		 moveInViewport: function(xCor,yCor){ 
 			el = this.$elem;
 			var rect = el[ 0 ].getBoundingClientRect();
-			var visOffset = 0; //Fix
-			//console.log( rect );
+			var visOffset = 0 ;
 			var tO = parseInt(el[0].style.top) - yCor;
 			var lO = parseInt(el[0].style.left) - xCor ;
-			if(this.startPos ==10){
-				console.log( '----Element-----' );
-				console.log( parseInt(el[0].style.top) );
-				console.log( yCor );
-				console.log( tO );
-				console.log( rect.top );
-				console.log( '----X:-----' );
-				console.log( parseInt(el[0].style.left) );
-				console.log( xCor );
-				console.log( lO );
-				console.log( rect.left );
-				console.log( rect.left - lO );
-				console.log( '----Element-----' );
-			}
 			var bool = (
 				( rect.top - tO ) >= ( 0 - visOffset ) &&
 				( rect.left - lO ) >= ( 0 - visOffset )  &&
 				( rect.bottom - tO ) <= ( (window.innerHeight + visOffset ) || (document.documentElement.clientHeight + visOffset ) ) && /*or $(window).height() */
 				( rect.right - lO ) <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) /*or $(window).width() */
 			);
-			return bool || this.isElementInViewport;
+			return bool;
 		 } ,
 		 hxGetYOffset:function(cellStyle) {
             var y1 = parseInt(cellStyle.height) * 1.015;
@@ -341,8 +325,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		  this.hexMode 		= ( options && options.hexMode) 		|| this.hexMode;
 		 
 		  /* Item options*/
-		  this.cellOptions.hxScale 		= ( options && options.hxScale)  || 'hxd-xl';
-		  this.cellOptions.autoBind 	= ( options && options.autoBind) || 0;
+		  this.cellOptions.hxScale 		= ( options && options.hxScale) 	|| 'hxd-xl';
+		  this.cellOptions.autoBind 	= ( options && options.autoBind) 	|| 0;
 		  this.cellOptions.cellBgColor 	= ( options && options.cellBgColor) || 0;
 		},
 		/**
@@ -467,7 +451,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			}
         },
 		grepItems: function(key,val){
-			return $.grep(this.items, function (hxI)
+			return $.grep( this.items, function (hxI)
 			{
 				if (typeof  val!== 'undefined'){
 					return hxI[key] === val;
@@ -476,7 +460,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				}
 			});
 		},
-		orderByDateKey: function( key, hideOthers ,order, splitter, dateFormat ){
+		orderByDateKey: function( key , hideOthers , order , splitter , dateFormat ){
 			var order 			= order || 'ascending';
 			var splitter 		= splitter || '.';
 			var dateFormat 		= dateFormat || 'DD-MM-YYYY';
@@ -716,6 +700,16 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			out[formatOrder[formatArr[i]]] = strArr[i];
 		}
 		return out.join(" ");
+	}
+	function msieversion() {
+			var ua = window.navigator.userAgent;
+			var msie = ua.indexOf("MSIE ");
+
+			if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer, return version number
+				return true; //alert(parseInt(ua.substring(msie + 5, ua.indexOf(".", msie))));
+			else                 // If another browser, return 0
+				return false;
+
 	}
 })(jQuery);
 

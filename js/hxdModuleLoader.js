@@ -1,6 +1,6 @@
 /**
-	Hexdgrid 0.2.4 ( Beta version ) Hex  module
-	This HxdGrid module loader
+	Hexdgrid 0.2.4 ( Beta version ) Module loader
+	This is the HxdGrid module loader. It checks for previously included script modules and then allows the hexgrid to load an appropriate module for a given option setting
 	Copyright (c) 2015 Antoni Atanasov 
 	License:  The current version project is licensed under GPLv3
 	Project site: Coming Soon
@@ -17,28 +17,18 @@ var module[4]  	= typeof module[4]   === 'undefined' 	? 0 : HxdRModule;
 var HxdModuleLoader = (function() {
 	var constructorCache = [];
 	var protoCache = [];
-	console.log(modules)
-	/* EXAMPLE CONDITION
-	if(hexModule && _this.hexMode){
-		if( clipModule && _this.clipping && $(this).hasClass("hxdClip") ){ // add control option to enable clipping for all  //classList.contains
-			_this.items[i] =  new HxdItemClip( $(this) , _this.cellOptions); //new HxdItem($(this), _this.cellOptions);
-		}
-		else if( clipModule && _this.clipping  && $(this).find('img').length != 0 ){//add control option to disable clipping
-			_this.items[i] =  new HxdItemClip( $(this) , _this.cellOptions); 
-		}
-		else{
-			_this.items[i] =  new HxdItemSquare( $(this) , _this.cellOptions);
-		}
-	}
-	else{//default non clipping object	
-		_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); //new HxdItem($(this), _this.cellOptions);
-	}
-	
+	/* 
+		To do
+			- Reverse array before use. Allowing newer modules to be appended to the end
+			- Figure out a way (if possible) to auto load/ pre-load scripts from a provided location
+			- Write documentation on Usage
+			
+			Possible improvement. Convert constructor and Proto caches to objects. This will allow mixing prototypes and constructors
 	*/
 	var moduleSelectFunction = function( _this, cellOptions, $elem , HxdItem){
-		for (var i in modules) {
-			if(modules[i]!==0){
-				var cond = modules[i].HxdCondition( _this, cellOptions, $elem );
+		for ( var i in modules ) {
+			if( modules[i] !== 0 ){
+				var cond = modules[i].HxdCondition( _this, cellOptions, $elem );// Evaluates the condition specified in the module file
 				if( cond ){
 					if( typeof constructorCache[i] ==='undefined' ){
 						var obj = modules[i].constOb;
@@ -51,13 +41,9 @@ var HxdModuleLoader = (function() {
 						extendProto( obj, HxdItem );			//add the core object to the prototype chain
 						addToProto( obj , modules[i].protoOb );
 						constructorCache[i]  = obj;
-					}else{
-						console.log('Loading cache');
-						console.log(constructorCache[i] );
 					}
-					//console.log('CONSTRUCTOR');
+					
 					return new constructorCache[i]( $elem , cellOptions );
-					//console.log('-CONSTRUCTOR');
 				}
 			}
 		}
