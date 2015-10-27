@@ -37,27 +37,28 @@ var HxdModuleLoader = (function() {
 	*/
 	var moduleSelectFunction = function( _this, cellOptions, $elem , HxdItem){
 		for (var i in modules) {
-			console.log('Module '+i);
-			var cond = modules[i].HxdCondition( _this, cellOptions, $elem );
-			if( cond ){
-				if( typeof constructorCache[i] ==='undefined' ){
-					var obj = modules[i].constOb;
-					console.log('CACHING CONSTRUCTOR');
-					if( typeof protoCache[i] ==='undefined' ){
-						console.log(modules[i].protoOb);
-						protoCache[i] = modules[i].protoOb;
-						console.log('CACHING PROTOTYPE');
+			if(modules[i]!==0){
+				var cond = modules[i].HxdCondition( _this, cellOptions, $elem );
+				if( cond ){
+					if( typeof constructorCache[i] ==='undefined' ){
+						var obj = modules[i].constOb;
+						console.log('CACHING CONSTRUCTOR');
+						if( typeof protoCache[i] ==='undefined' ){
+							console.log(modules[i].protoOb);
+							protoCache[i] = modules[i].protoOb;
+							console.log('CACHING PROTOTYPE');
+						}
+						extendProto( obj, HxdItem );			//add the core object to the prototype chain
+						addToProto( obj , modules[i].protoOb );
+						constructorCache[i]  = obj;
+					}else{
+						console.log('Loading cache');
+						console.log(constructorCache[i] );
 					}
-					extendProto( obj, HxdItem );			//add the core object to the prototype chain
-					addToProto( obj , modules[i].protoOb );
-					constructorCache[i]  = obj;
-				}else{
-					console.log('Loading cache');
-					console.log(constructorCache[i] );
+					//console.log('CONSTRUCTOR');
+					return new constructorCache[i]( $elem , cellOptions );
+					//console.log('-CONSTRUCTOR');
 				}
-				//console.log('CONSTRUCTOR');
-				return new constructorCache[i]( $elem , cellOptions );
-				//console.log('-CONSTRUCTOR');
 			}
 		}
 		return new HxdItem( $elem , cellOptions );
