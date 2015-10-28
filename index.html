@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Hxdgrid by Fr0stb1t3</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Hxdgrid</h1>
+      <h2 class="project-tagline"></h2>
+      <a href="https://github.com/Fr0stb1t3/hxdgrid" class="btn">View on GitHub</a>
+      <a href="https://github.com/Fr0stb1t3/hxdgrid/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/Fr0stb1t3/hxdgrid/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="hxdgrid" class="anchor" href="#hxdgrid" aria-hidden="true"><span class="octicon octicon-link"></span></a>hxdGrid</h1>
+
+<h3>
+<a id="version" class="anchor" href="#version" aria-hidden="true"><span class="octicon octicon-link"></span></a>Version</h3>
+
+<p>0.2.4</p>
+
+<p>HxdGrid is a front end script for ordering and sorting elements in a responsive grid layout. The implementation is object based and allows easy customization of the appearance, animation and style of the div elements.</p>
+
+<ul>
+<li>Several packaged variations for div layouts including a hexagon grid</li>
+<li>Easy to use data-tag sorting</li>
+<li>CSS transitions or jQuery for reordering and sorting animations.</li>
+</ul>
+
+<h3>
+<a id="requirements" class="anchor" href="#requirements" aria-hidden="true"><span class="octicon octicon-link"></span></a>Requirements</h3>
+
+<p>HxdGrid has two dependencies:</p>
+
+<ul>
+<li>
+<a href="http://jquery.com">jQuery</a> -At least 1.6.0</li>
+<li>
+<a href="https://github.com/andrusieczko/clip-path-polygon">clip-path-polygon</a> - Only for the hexagon clip module</li>
+</ul>
+
+<h1>
+<a id="usage-and-setup" class="anchor" href="#usage-and-setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Usage and Setup</h1>
+
+<p>You need to run the script from a server. To get a basic barebones version going you need the base stylesheet and script</p>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">link</span> <span class="pl-e">rel</span>=<span class="pl-s"><span class="pl-pds">"</span>stylesheet<span class="pl-pds">"</span></span> <span class="pl-e">href</span>=<span class="pl-s"><span class="pl-pds">"</span>css/hxdgrid.css<span class="pl-pds">"</span></span>&gt;
+&lt;<span class="pl-ent">script</span> <span class="pl-e">src</span>=<span class="pl-s"><span class="pl-pds">"</span>js/hxdgrid.js<span class="pl-pds">"</span></span> <span class="pl-e">type</span>=<span class="pl-s"><span class="pl-pds">"</span>text/javascript<span class="pl-pds">"</span></span>&gt;&lt;/<span class="pl-ent">script</span>&gt;</pre></div>
+
+<h4>
+<a id="1-the-first-step-is-to-have-a-html-container-element-and-items-that-you-want-to-sort" class="anchor" href="#1-the-first-step-is-to-have-a-html-container-element-and-items-that-you-want-to-sort" aria-hidden="true"><span class="octicon octicon-link"></span></a>1. The first step is to have a html container element and items that you want to sort</h4>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxOuter<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;testbox&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;testbox&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;testbox&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;testbox&lt;/<span class="pl-ent">div</span>&gt;
+&lt;/<span class="pl-ent">div</span>&gt;</pre></div>
+
+<h4>
+<a id="2-next-we-need-a-simple-style-for-the-boxes" class="anchor" href="#2-next-we-need-a-simple-style-for-the-boxes" aria-hidden="true"><span class="octicon octicon-link"></span></a>2. Next we need a simple style for the boxes</h4>
+
+<pre lang="style"><code>.hxdItem {
+  width: 200px;
+  overflow: hidden;
+  height: 200px;
+  background: #AAA;
+  margin-left: 4px;
+  margin-bottom: 4px;
+}
+</code></pre>
+
+<h4>
+<a id="3-finally-we-launch-the-script-with-a-jquery-function" class="anchor" href="#3-finally-we-launch-the-script-with-a-jquery-function" aria-hidden="true"><span class="octicon octicon-link"></span></a>3. Finally we launch the script with a jquery function</h4>
+
+<div class="highlight highlight-source-js"><pre>$(<span class="pl-k">function</span>() {
+    <span class="pl-k">var</span> options  <span class="pl-k">=</span> {
+        selector<span class="pl-k">:</span>  <span class="pl-s"><span class="pl-pds">'</span>.hxdItem<span class="pl-pds">'</span></span><span class="pl-c">//default selector</span>
+    };
+    $(<span class="pl-s"><span class="pl-pds">'</span>.hxOuter<span class="pl-pds">'</span></span>).hxdGrid(options);
+});</pre></div>
+
+<h3>
+<a id="extended-setup" class="anchor" href="#extended-setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended Setup</h3>
+
+<h4>
+<a id="sorting" class="anchor" href="#sorting" aria-hidden="true"><span class="octicon octicon-link"></span></a>Sorting</h4>
+
+<p>To get the sorting running you  need to add some data tags</p>
+
+<h4>
+<a id="1-add-some-data-tags" class="anchor" href="#1-add-some-data-tags" aria-hidden="true"><span class="octicon octicon-link"></span></a>1 Add some data tags</h4>
+
+<p>The script targets data tags that start with data-hxd and should ingore others.</p>
+
+<div class="highlight highlight-text-html-basic"><pre>&lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxOuter<span class="pl-pds">"</span></span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-letter</span>=<span class="pl-s"><span class="pl-pds">"</span>c<span class="pl-pds">"</span></span>&gt;Third Box  (letter sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-letter</span>=<span class="pl-s"><span class="pl-pds">"</span>d<span class="pl-pds">"</span></span>&gt;Fourth Box (letter sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-letter</span>=<span class="pl-s"><span class="pl-pds">"</span>b<span class="pl-pds">"</span></span>&gt;Second Box (letter sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-letter</span>=<span class="pl-s"><span class="pl-pds">"</span>a<span class="pl-pds">"</span></span>&gt;First Box  (letter sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span>&gt;Unordered box&lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-date</span>=<span class="pl-s"><span class="pl-pds">"</span>30.10.2015<span class="pl-pds">"</span></span>&gt;Fourth Box (date sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-date</span>=<span class="pl-s"><span class="pl-pds">"</span>25.10.2015<span class="pl-pds">"</span></span>&gt;Second Box (date sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-date</span>=<span class="pl-s"><span class="pl-pds">"</span>24.10.2015<span class="pl-pds">"</span></span>&gt;First Box  (date sort) &lt;/<span class="pl-ent">div</span>&gt;
+    &lt;<span class="pl-ent">div</span> <span class="pl-e">class</span>=<span class="pl-s"><span class="pl-pds">"</span>hxdItem<span class="pl-pds">"</span></span> <span class="pl-e">data-hxd-date</span>=<span class="pl-s"><span class="pl-pds">"</span>29.10.2015<span class="pl-pds">"</span></span>&gt;Third Box  (date sort) &lt;/<span class="pl-ent">div</span>&gt;
+&lt;/<span class="pl-ent">div</span>&gt;
+&lt;<span class="pl-ent">button</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>dateSort<span class="pl-pds">"</span></span>&gt;Sort by date&lt;/<span class="pl-ent">button</span>&gt;
+&lt;<span class="pl-ent">button</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>letterSort<span class="pl-pds">"</span></span>&gt;Sort by letter&lt;/<span class="pl-ent">button</span>&gt;
+&lt;<span class="pl-ent">button</span> <span class="pl-e">id</span>=<span class="pl-s"><span class="pl-pds">"</span>resetOrder<span class="pl-pds">"</span></span>&gt;Reset Order&lt;/<span class="pl-ent">button</span>&gt;</pre></div>
+
+<h4>
+<a id="2-get-the-hxgrid-object-and-bind-the-order-event" class="anchor" href="#2-get-the-hxgrid-object-and-bind-the-order-event" aria-hidden="true"><span class="octicon octicon-link"></span></a>2 Get the hxGrid object and bind the order event</h4>
+
+<div class="highlight highlight-source-js"><pre>$(<span class="pl-k">function</span>() {
+    <span class="pl-k">var</span> options  <span class="pl-k">=</span> {
+        selector<span class="pl-k">:</span>  <span class="pl-s"><span class="pl-pds">'</span>.hxdItem<span class="pl-pds">'</span></span><span class="pl-c">//default selector</span>
+    };
+    $(<span class="pl-s"><span class="pl-pds">'</span>.hxOuter<span class="pl-pds">'</span></span>).hxdGrid(options);
+    <span class="pl-k">var</span> demoGrid <span class="pl-k">=</span> getHxGridObj(<span class="pl-c1">0</span>); <span class="pl-c">// Get the correct grid container object</span>
+    $(<span class="pl-s"><span class="pl-pds">'</span>#dateSort<span class="pl-pds">'</span></span>).<span class="pl-c1">click</span>(<span class="pl-k">function</span>(){
+        demoGrid.orderByKey(<span class="pl-s"><span class="pl-pds">'</span>date<span class="pl-pds">'</span></span>);
+    });
+    $(<span class="pl-s"><span class="pl-pds">'</span>#letterSort<span class="pl-pds">'</span></span>).<span class="pl-c1">click</span>(<span class="pl-k">function</span>(){
+        demoGrid.orderByKey(<span class="pl-s"><span class="pl-pds">'</span>letter<span class="pl-pds">'</span></span>);
+    });
+    $(<span class="pl-s"><span class="pl-pds">'</span>#resetOrder<span class="pl-pds">'</span></span>).<span class="pl-c1">click</span>(<span class="pl-k">function</span>(){
+        demoGrid.resetOrder();
+    });
+});
+</pre></div>
+
+<h3>
+<a id="development" class="anchor" href="#development" aria-hidden="true"><span class="octicon octicon-link"></span></a>Development</h3>
+
+<p>See a bug that needs fixing or an ugly bit of code that really needs a cleanup. Let me know at <a href="mailto:antoni.hxd@gmail.com">antoni.hxd@gmail.com</a></p>
+
+<h3>
+<a id="todos" class="anchor" href="#todos" aria-hidden="true"><span class="octicon octicon-link"></span></a>Todos</h3>
+
+<ul>
+<li>Debugging. Still has some issues</li>
+<li>Testing.Browser support </li>
+<li>Documentation for usage and development</li>
+<li>Module autoloading</li>
+</ul>
+
+<h2>
+<a id="license" class="anchor" href="#license" aria-hidden="true"><span class="octicon octicon-link"></span></a>License</h2>
+
+<p>GPLv3</p>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/Fr0stb1t3/hxdgrid">Hxdgrid</a> is maintained by <a href="https://github.com/Fr0stb1t3">Fr0stb1t3</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
