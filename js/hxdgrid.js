@@ -94,7 +94,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		startPos: null,
 		cellBgColor: 0,
 		hexMode: false,
-		viewportFading: true,
+		viewportFading: false,
 		xCor: 0,
 		yCor: 0,
 		setOptions: function(options) {
