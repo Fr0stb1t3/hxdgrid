@@ -127,7 +127,7 @@ License
 
 GPLv3
 
-	[demoLink]: <http://fr0stb1t3.github.io/hxdgrid/>
+   [demoLink]: <http://fr0stb1t3.github.io/hxdgrid/>
    [jQuery]: <http://jquery.com>
    [clip-path-polygon]: <https://github.com/andrusieczko/clip-path-polygon>
   
