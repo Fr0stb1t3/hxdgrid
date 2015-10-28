@@ -8,6 +8,20 @@
     <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
     <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
     <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+	<link rel="stylesheet" href="https://raw.githubusercontent.com/Fr0stb1t3/hxdgrid/master/css/hxdgrid.css">
+	<script src="http://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js" type="text/javascript"></script>
+	<script src="https://raw.githubusercontent.com/Fr0stb1t3/hxdgrid/master/js/hxdgrid.js" type="text/javascript"></script>
+	<style>
+		.hxdItemLive {
+		  width: 200px;
+		  overflow: hidden;
+		  height: 200px;
+		  background: #AAA;
+		  margin-left: 4px;
+		  margin-bottom: 4px;
+		}
+	</style>
+	
   </head>
   <body>
     <section class="page-header">
@@ -87,7 +101,23 @@
     };
     $(<span class="pl-s"><span class="pl-pds">'</span>.hxOuter<span class="pl-pds">'</span></span>).hxdGrid(options);
 });</pre></div>
-
+<div>
+	<h3>Resulting in:</h3>
+	<div class="hxOuterLive">
+		<div class="hxdItemLive">testbox</div>
+		<div class="hxdItemLive">testbox</div>
+		<div class="hxdItemLive">testbox</div>
+		<div class="hxdItemLive">testbox</div>
+	</div>
+	<script>
+	$(function() {
+		var options  = {
+			selector:  '.hxdItemLive'//default selector
+		};
+		$('.hxOuterLive').hxdGrid(options);
+	});
+	</script>
+</div>
 <h3>
 <a id="extended-setup" class="anchor" href="#extended-setup" aria-hidden="true"><span class="octicon octicon-link"></span></a>Extended Setup</h3>
 
@@ -143,7 +173,48 @@
     });
 });
 </pre></div>
-
+<div>
+	<h3>Resulting in:</h3>
+	<div class="hxOuterLive2">
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive" data-hxd-letter="c">Third Box  (letter sort) </div>
+		<div class="hxdItemLive" data-hxd-letter="d">Fourth Box (letter sort) </div>
+		<div class="hxdItemLive" data-hxd-letter="b">Second Box (letter sort) </div>
+		<div class="hxdItemLive" data-hxd-letter="a">First Box  (letter sort) </div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive">Unordered box</div>
+		<div class="hxdItemLive" data-hxd-date="30.10.2015">Fourth Box (date sort) </div>
+		<div class="hxdItemLive" data-hxd-date="25.10.2015">Second Box (date sort) </div>
+		<div class="hxdItemLive" data-hxd-date="24.10.2015">First Box  (date sort) </div>
+		<div class="hxdItemLive" data-hxd-date="29.10.2015">Third Box  (date sort) </div>
+	</div>
+	<button id="dateSort">Sort by date</button>
+	<button id="letterSort">Sort by letter</button>
+	<button id="resetOrder">Reset Order</button>
+	<script>
+	$(function() {
+		var options  = {
+			selector:  '.hxdItemLive'//default selector
+		};
+		$('.hxOuterLive2').hxdGrid(options);
+		var demoGrid = getHxGridObj(0); // Get the correct grid container object
+		$('#dateSort').click(function(){
+			demoGrid.orderByKey('date');
+		});
+		$('#letterSort').click(function(){
+			demoGrid.orderByKey('letter');
+		});
+		$('#resetOrder').click(function(){
+			demoGrid.resetOrder();
+		});
+	});
+	</script>
+</div>
 <h3>
 <a id="development" class="anchor" href="#development" aria-hidden="true"><span class="octicon octicon-link"></span></a>Development</h3>
 
