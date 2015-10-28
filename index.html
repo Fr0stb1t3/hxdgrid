@@ -87,7 +87,7 @@
   width: 200px;
   overflow: hidden;
   height: 200px;
-  background: #AAA;
+  background: #159060;
   margin-left: 4px;
   margin-bottom: 4px;
 }
@@ -166,7 +166,7 @@
     $(<span class="pl-s"><span class="pl-pds">'</span>.hxOuter<span class="pl-pds">'</span></span>).hxdGrid(options);
     <span class="pl-k">var</span> demoGrid <span class="pl-k">=</span> getHxGridObj(<span class="pl-c1">0</span>); <span class="pl-c">// Get the correct grid container object</span>
     $(<span class="pl-s"><span class="pl-pds">'</span>#dateSort<span class="pl-pds">'</span></span>).<span class="pl-c1">click</span>(<span class="pl-k">function</span>(){
-        demoGrid.orderByKey(<span class="pl-s"><span class="pl-pds">'</span>date<span class="pl-pds">'</span></span>);
+        demoGrid.orderByDateKey(<span class="pl-s"><span class="pl-pds">'</span>date<span class="pl-pds">'</span></span>);
     });
     $(<span class="pl-s"><span class="pl-pds">'</span>#letterSort<span class="pl-pds">'</span></span>).<span class="pl-c1">click</span>(<span class="pl-k">function</span>(){
         demoGrid.orderByKey(<span class="pl-s"><span class="pl-pds">'</span>letter<span class="pl-pds">'</span></span>);
@@ -179,6 +179,8 @@
 </section>
 <div style="text-align: center;">
 	<h3>Resulting in:</h3>
+	<a href="readmeDemo.html" target="_blank"><small>You can also see it here</small></a>
+	<br/></br>
 	<div class="hxOuterLive2">
 		<div class="hxdItemLive">Unordered box</div>
 		<div class="hxdItemLive">Unordered box</div>
@@ -208,15 +210,15 @@
 		};
 		$('.hxOuterLive2').hxdGrid(options);
 		var demoGrid = getHxGridObj(0); // Get the correct grid container object
-		$('#dateSort').click(function(){
-			demoGrid.orderByKey('date');
-		});
-		$('#letterSort').click(function(){
-			demoGrid.orderByKey('letter');
-		});
-		$('#resetOrder').click(function(){
-			demoGrid.resetOrder();
-		});
+			$('#dateSort').click(function(){
+				demoGrid.orderByDateKey('date' , false , 'DESC' );
+			});
+			$('#letterSort').click(function(){
+				demoGrid.orderByKey('letter' , true , 'DESC' );
+			});
+			$('#resetOrder').click(function(){
+				demoGrid.resetOrder();
+			});
 	});
 	</script>
 </div>
