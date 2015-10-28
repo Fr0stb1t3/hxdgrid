@@ -375,8 +375,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				this.cellStyle['margin-top']) || 0));
 				
 			this.$el.find('.gridContent')
-				.height(boundingH)
-				.width('100%'); 
+				.css({
+					'position':'relative',
+					'width': '100%',
+					'height': boundingH,
+				})
+				; 
 		},
 		 _boundaryWrap:function($elem , _this ) {
 			_this= _this || this;
