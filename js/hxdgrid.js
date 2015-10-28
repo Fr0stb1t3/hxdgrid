@@ -172,7 +172,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				if ( this.moveInViewport( xCor, yCor ) || !this.viewportFading ) {//this.isElementInViewport()
 					this.animateOver(xCor, yCor );
 				}else{
-					if (this.cssAnim) {
+					if ( this.cssAnim ) {
 						console.log('cssFade');
 						this.fadeOver(xCor,yCor, $elem);
 					}else{
@@ -246,7 +246,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			elem.style.MozTransition  = "  opacity  0.7s ease ";
 			elem.style.transition = " opacity  1 linear 0s ";
 			elem.style.opacity = "0";
-			this.delayedOpacityShift(elem, 2 , 1500, xCor , yCor );
+			this.delayedOpacityShift( elem, 2 , 1500, xCor , yCor );
 		},
 		delayedOpacityShift: function( elem, op,delay, xCor, yCor ) {
 			var delay = typeof delay==='undefined' ? 1000 : delay;
@@ -450,7 +450,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				_this.itemOrder[i] =  k;
 			}
         },
-		grepItems: function(key,val){
+		grepItemsJQ: function(key,val){
 			return $.grep( this.items, function (hxI)
 			{
 				if (typeof  val!== 'undefined'){
@@ -459,6 +459,17 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					return hxI[key];
 				}
 			});
+		},
+		grepItems: function(key,val){
+			var cond  = function (hxI)
+			{
+				if (typeof  val!== 'undefined'){
+					return hxI[key] === val;
+				}else{
+					return hxI[key];
+				}
+			};
+			return vanillaGrep( this.items ,cond );
 		},
 		orderByDateKey: function( key , hideOthers , order , splitter , dateFormat ){
 			var order 			= order || 'ascending';
@@ -505,6 +516,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 												return a[key] > b[key];
 											}
 										});
+										console.log(set);
 			var ordered = [];
 			var hidden = [];
 			for(var i = 0,  len = set.length; i < len; i++ ){
@@ -657,6 +669,26 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			msort(inp.slice(0, mid)),
 			msort(inp.slice(mid)));
 	}
+	
+	function hxMerge(key, a, b, c ) {
+		c = c || [];
+		console.log('merging');
+		console.log(c);
+		if(!a.length && !b.length) return c;
+
+		c.push(a[0][key] < b[0][key] || isNaN(b[0][key]) ? a.shift() : b.shift());
+		return hxMerge(key,a, b, c);
+	}
+	function hxMsort( itemArr , key ){
+		console.log(itemArr);
+		var mid = (itemArr.length / 2) << 0;
+		if(!mid  ) return itemArr; //|| (  Object.prototype.toString.call( itemArr ) !=='[object Array]')
+		return hxMerge(
+			key,
+			hxMsort(itemArr.slice(0, mid),key),
+			hxMsort(itemArr.slice(mid),key)
+			);
+	}
     function css(a) { //Improved Version. Gets the computed style for the properties which may affect the grid object
 		//Current Input jquery object. Future change would be for the function will not use the dom object directly
 		var propArr = ['width',
@@ -704,12 +736,24 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	function msieversion() {
 			var ua = window.navigator.userAgent;
 			var msie = ua.indexOf("MSIE ");
-
-			if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))      // If Internet Explorer, return version number
-				return true; //alert(parseInt(ua.substring(msie + 5, ua.indexOf(".", msie))));
-			else                 // If another browser, return 0
+			if (msie > 0 || !!navigator.userAgent.match(/Trident.*rv\:11\./))     
+				return true;
+			else                
 				return false;
+	}
+	function vanillaGrep( items, callback ){
+		var filtered = [],
+		len = items.length,
+		i = 0;
+		for (i; i < len; i++) {
+			var item = items[i];
+			var cond = callback(item);
+			if (cond) {
+				filtered.push(item);
+			}
+		}
 
+		return filtered;
 	}
 })(jQuery);
 
