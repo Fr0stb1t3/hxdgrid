@@ -1,4 +1,4 @@
-# hxdGrid (beta)
+# hxdGrid 
 
 HxdGrid is a front end script for ordering and sorting elements in a responsive grid layout. The implementation is object based and allows easy customization of the appearance, animation and style of the div elements.
 
@@ -94,10 +94,10 @@ $(function() {
 	$('.hxOuter').hxdGrid(options);
 	var demoGrid = getHxGridObj(0); // Get the correct grid container object
 	$('#dateSort').click(function(){
-	    demoGrid.orderByKey('date');
+	   demoGrid.orderByDateKey('date' , false , 'DESC' );
 	});
 	$('#letterSort').click(function(){
-		demoGrid.orderByKey('letter');
+		demoGrid.orderByKey('letter' , false , 'DESC' ); //@params: tagname, fade out of viewport, order 
 	});
 	$('#resetOrder').click(function(){
 		demoGrid.resetOrder();
@@ -109,6 +109,10 @@ $(function() {
 
 See a bug that needs fixing or an ugly bit of code that really needs a cleanup. Let me know at antoni.hxd@gmail.com
 
+### Known issues and notes
+	- CSS3 transitions are disabled for IE versions.
+	- Sorting does not quite work on Safari (for now)
+	- The hex clip module does not work on Safari, IE and some mobile devices
 
 ### Todos
 
