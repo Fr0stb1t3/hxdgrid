@@ -41,6 +41,14 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		_this.resizeLock = true;
 		_this.items=[];
 		$el.addClass('hxdGridContainer');
+		/*  list-style: none;
+		  width: 100%;
+		  height: 100%;
+		  overflow: hidden;
+		  position: relative;
+		  */
+		$el.get(0).setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
+		
 		_this.setOptions(options);
 		_this.create(jQuery, _this);
 		

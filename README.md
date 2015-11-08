@@ -21,9 +21,8 @@ HxdGrid has two dependencies:
 # Usage and Setup 
 #### Also available at http://fr0stb1t3.github.io/hxdgrid/
 
-You need to run the script from a server. To get a basic barebones version going you need the base stylesheet and script
+You need to run the script from a server. To get a basic barebones version going you need the base script
 ```html
-<link rel="stylesheet" href="css/hxdgrid.css">
 <script src="js/hxdgrid.js" type="text/javascript"></script>
 ```
 
