@@ -226,18 +226,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 						delayedX($elem.get(0) ,xPx ,1000);
 				}
 			}
-			function delayedY( elem, top,delay ) {// To Do Move
-				var delay = typeof delay === 'undefined' ? 1000 : delay;
-				setTimeout( function () {
-						elem.style.top = top ;
-					}, delay);
-			}
-			function delayedX( elem, left,delay ) {// To Do Move
-				var delay = typeof delay === 'undefined' ? 1000 : delay;
-				setTimeout( function () {
-						elem.style.left = left ;
-					}, delay);
-			}
 		 },
 		 fadeOver: function(xCor, yCor ,$elem ) {
 			var elem = $elem || this.$elem; //
@@ -258,6 +246,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				elem.style.opacity = "1";
 			}, delay);
 		},
+		forceHidden: function(){//IMPROVE
+			this.$elem.fadeOut("slow", "linear");
+		},
 		forceVisible: function(){//IMPROVE
 			this.$elem.fadeIn("slow", "linear");
 		},
@@ -272,8 +263,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			return (
 				rect.top >= ( 0 - visOffset ) &&
 				rect.left >= ( 0 - visOffset )  &&
-				rect.bottom <= ( (window.innerHeight + visOffset ) || (document.documentElement.clientHeight + visOffset ) ) && /*or $(window).height() */
-				rect.right <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) /*or $(window).width() */
+				rect.bottom <= ( (window.innerHeight + visOffset ) || (document.documentElement.clientHeight + visOffset ) ) && 
+				rect.right <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) 
 			);
 		 },
 		 moveInViewport: function(xCor,yCor){ 
@@ -282,16 +273,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var visOffset = 0 ;
 			var tO = parseInt(el[0].style.top) - yCor;
 			var lO = parseInt(el[0].style.left) - xCor ;
-			var bool = (
+			return (
 				( rect.top - tO ) >= ( 0 - visOffset ) &&
 				( rect.left - lO ) >= ( 0 - visOffset )  &&
-				( rect.bottom - tO ) <= ( (window.innerHeight + visOffset ) || (document.documentElement.clientHeight + visOffset ) ) && /*or $(window).height() */
-				( rect.right - lO ) <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) /*or $(window).width() */
+				( rect.bottom - tO ) <= ( (window.innerHeight + visOffset ) || (document.documentElement.clientHeight + visOffset ) ) && 
+				( rect.right - lO ) <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) 
 			);
-			return bool;
 		 } ,
 		 hxGetYOffset:function(cellStyle) {
-            var y1 = parseInt(cellStyle.height) * 1.015;
+            var y1 = parseInt( cellStyle.height ) * 1.015;
             return [
                 ( function(i) {
                     return (y1 * i);
@@ -313,6 +303,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		selector:  '.hxdItem',
 		hiddenItems: [],
 		gridId: null,
+		emptyGrid : false,
+		emptyGridLength : 0,
 		reflowLock : true,
 		cellStyle: 0 ,
 		cellOptions: {},
@@ -323,6 +315,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		  this.resize 		= ( options && options.resize) 			|| this.resize;
 		  this.selector 	= ( options && options.selector) 		|| this.selector;
 		  this.hexMode 		= ( options && options.hexMode) 		|| this.hexMode;
+		  this.reflowLock 	= ( options && options.reflowLock) 		|| this.reflowLock;
+		  this.emptyGrid 	= ( options && options.emptyGrid) 		|| this.emptyGrid;
+		  this.emptyGridLength 	= ( options && options.emptyGridLength) || this.emptyGridLength;
+		
 		 
 		  /* Item options*/
 		  this.cellOptions.hxScale 		= ( options && options.hxScale) 	|| 'hxd-xl';
@@ -344,7 +340,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				if( HxdModuleLoader !== 0 ){ //If module loader is present use it to get the correct hxdItem object
 					_this.items[i] = HxdModuleLoader.moduleSelect( _this , _this.cellOptions, $(this) , HxdItem );
 				}else{
-					_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); 
+					_this.items[i] =  new HxdItem( $(this) , _this.cellOptions); //Use default item
 				}
 				_this.items[i]._id = _this._id + '@'+i;
 				_this.items[i]._passNodeAttributes( $(this).get(0).attributes );//Used for sorting
@@ -357,7 +353,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				}
 				_this.cellStyle =  css( _this.items[sK].$elem ); //Used in mapGrid
 				
-				console.log( css( _this.items[sK].$elem ) );
 				if(( typeof _this.cellStyle.height === 'undefined') ){
 					_this.cellStyle.height = _this.cellStyle.width;
 				}
@@ -379,8 +374,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					'position':'relative',
 					'width': '100%',
 					'height': boundingH,
-				})
-				; 
+				}); 
 		},
 		 _boundaryWrap:function($elem , _this ) {
 			_this= _this || this;
@@ -433,26 +427,36 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			if(( typeof _this.itemOrder === 'undefined') ){
 				_this.itemOrder=[];
 			}
-			for( var i = 0,  len=  _this.items.length; i < len; i++ ){//iterates over
-				var k =  ( ( typeof itemOrder === 'undefined') || ( typeof itemOrder[i] === 'undefined') ) ? i : itemOrder[i] ; //  itemOrder[i]) || i;
-				
-				if( typeof  _this.xyMap.cols!== 'undefined' || _this.xyMap.cols != 0 ){
-					if( 0 < _this.hiddenItems.indexOf(k)){
-							_this.items[k].toggleVisible();
+			 for( var i = 0,  len=  _this.items.length; i < len; i++ ){
+					var k =  ( ( typeof itemOrder === 'undefined') || ( typeof itemOrder[i] === 'undefined') ) ? i : itemOrder[i] ; //  itemOrder[i]) || i;
+					
+					if( typeof  _this.xyMap.cols!== 'undefined' || _this.xyMap.cols != 0 ){
+						if( 0 < _this.hiddenItems.indexOf(k) ){
+								_this.items[k].toggleVisible();
 						}else{
 							_this.items[k].forceVisible();
 						}
-						
-					var row = Math.ceil((i + 1) / _this.xyMap.cols),
-						tCol = ( (i) % _this.xyMap.cols ),
-						xCor = (tCol) * _this.xyMap.xO + _this.xyMap.xIndent;
+						if( _this.emptyGrid == true ){	//used for bigger grids with less elements and custom coordinates
+							var row = _this.items[k].setrow,
+								tCol = _this.items[k].setcol % _this.xyMap.cols ;//( (i) % _this.xyMap.cols ),
+						}else{
+							var row = Math.ceil( (i + 1) / _this.xyMap.cols ),
+								tCol = ( (i) % _this.xyMap.cols );
+						}
+						var xCor = (tCol) * _this.xyMap.xO + _this.xyMap.xIndent;
 						if( !isNaN(tCol) ) 
 							var yCor = _this.xyMap.yO[tCol % 2] (row - 1);// <-- calls a function
+						
+						if((typeof tCol === 'undefined')||(typeof yCor === 'undefined')){
+							_this.items[k].forceHidden();
+						}
+						
 						_this.items[k].moveTo(xCor,yCor);
+					}
+					_this.items[k].startPos = k;
+					_this.itemOrder[i] =  k;
 				}
-				_this.items[k].startPos = k;
-				_this.itemOrder[i] =  k;
-			}
+			
         },
 		grepItemsJQ: function(key,val){
 			return $.grep( this.items, function (hxI)
@@ -476,10 +480,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			return vanillaGrep( this.items ,cond );
 		},
 		orderByDateKey: function( key , hideOthers , order , splitter , dateFormat ){
+			var hideOthers = hideOthers || false;
 			var order 			= order || 'ascending';
 			var splitter 		= splitter || '.';
 			var dateFormat 		= dateFormat || 'DD-MM-YYYY';
-			var hideOthers = hideOthers || false;
 			var set = this.grepItems(key).
 										sort(function(a, b){
 											var aDate = Date.parse( hxDateFormat(  a[key] , splitter , dateFormat ) );
@@ -489,29 +493,11 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 											else
 												return aDate > bDate ;
 										});
-			var ordered = [];
-			var hidden = [];
-			for(var i = 0,  len = set.length; i < len; i++ ){
-				ordered[i] = set[i].startPos;
-			}
-			for(var i = 0,  len = this.itemOrder.length; i < this.itemOrder.length; i++ ){
-				if(  ordered.indexOf(i) !=-1){}
-				else{
-					ordered.push(i);
-					if( hideOthers ){
-						hidden.push(i);
-					}
-				}
-			}
-			if( hideOthers )
-				this.hiddenItems = hidden ;
-			
-			this.itemOrder = ordered ;
-			this.reflowCells(this.itemOrder);
+			this._orderChange(set, hideOthers);
 		},
 		orderByKey: function( key, hideOthers, order ){
-			var order 			= order || 'ascending';
 			var hideOthers 		= hideOthers || false;
+			var order 			= order || 'ascending';
 			var set = this.grepItems(key).
 										sort(function(a, b){
 											if( order=='descending' ){
@@ -521,6 +507,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 											}
 										});
 										console.log(set);
+			this._orderChange(set, hideOthers);
+		},
+		_orderChange( set, hideOthers){
 			var ordered = [];
 			var hidden = [];
 			for(var i = 0,  len = set.length; i < len; i++ ){
@@ -552,7 +541,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		},
 		resetOrder: function(){
 			for( var i = 0,  len= this.itemOrder.length; i < len; i++ ){
-				this.itemOrder[i]=i;
+				this.itemOrder[i] = i;
 			}
 			this.hiddenItems = [];
 			this.reflowCells(this.itemOrder);
@@ -569,8 +558,11 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var cont = this.$el;
 			var h = cont.height(),
 				w = cont.width();
-			var items = this.items.length//(cont.find(this.selector)).length;
-			
+			if(this.emptyGrid && this.emptyGridLength>0){
+				var items = this.emptyGridLength
+			}else{
+				var items = this.items.length//(cont.find(this.selector)).length;
+			}
 			var mrgL = parseInt(this.cellStyle['margin-left'] || 0),
 				mrgR = parseInt(this.cellStyle['margin-right'] || 0);
 				
@@ -710,9 +702,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	
     }
 	function getStyleProperties (el, propArr) {
-		var outJSON = {}
+		var outJSON = {}, cS = getComputedStyle !== 'undefined';
 		for(var i = 0,  len = propArr.length; i<len; i++){
-			if (getComputedStyle !== 'undefined') {
+			if (cS) {
 				outJSON[ propArr[i] ] = getComputedStyle(el, null).getPropertyValue(propArr[i]);//;
 			} else {
 				outJSON[ propArr[i] ] = el.currentStyle[propArr[i]];
@@ -758,6 +750,19 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		}
 
 		return filtered;
+	}
+	
+	function delayedY( elem, top,delay ) {
+		var delay = typeof delay === 'undefined' ? 1000 : delay;
+		setTimeout( function () {
+				elem.style.top = top ;
+			}, delay);
+	}
+	function delayedX( elem, left,delay ) {
+		var delay = typeof delay === 'undefined' ? 1000 : delay;
+		setTimeout( function () {
+				elem.style.left = left ;
+			}, delay);
 	}
 })(jQuery);
 
