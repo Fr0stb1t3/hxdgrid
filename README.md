@@ -8,7 +8,7 @@ HxdGrid is a front end script for ordering and sorting elements in a responsive 
 
 
 ### Version
-0.2.4
+0.2.5
 
 ### Requirements
 

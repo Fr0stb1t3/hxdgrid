@@ -1,5 +1,5 @@
 /**
-    HxdGrid 0.2.4 ( Beta version )
+    HxdGrid 0.2.5
     HxdGrid is a front end script for ordering and sorting elements in a responsive grid layout.
     Copyright (c) 2015 Antoni Atanasov
     License:  The current version project is licensed under GPLv3 at a later stage this may change to a dual license
@@ -7,7 +7,7 @@
     Project site: Coming Soon
     Github site:
 **/
-/** Beta Version **/
+
 var jQuery = jQuery || (require && require('jquery'));
 var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoader;
 (function($) {
@@ -49,7 +49,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
     HxdItem.prototype = {
             /* Base prototype. All the properties and methods in this object are shared between other variations */
             uid: 0,
-            /* {itemCounter}@{PARENTuid} */
             $elem: null,
             startPos: null,
             bgColor: 0,
@@ -452,13 +451,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             var order = order || 'ascending';
             var splitter = splitter || '.';
             var dateFormat = dateFormat || 'DD-MM-YYYY';
-            var set = quickSort(this.grepItems(key), key);
-
+            var set = vanillaSort(this.grepItems(key), key);
+            var typeShift = function(t){return Date.parse( hxDateFormat(  t, splitter , dateFormat )) }; //Function to adjust comparison for date objects
+            
             if (order == 'descending') {
-                var set = quickSort(this.grepItems(key), key, 1);
+                var set = vanillaSort(this.grepItems(key), key, 1,typeShift);
             } else {
-                var set = quickSort(this.grepItems(key), key);
+                var set = vanillaSort(this.grepItems(key), key,0,typeShift);
             }
+            
             this._orderChange(set, hideOthers);
         },
         orderByKey: function(key, hideOthers, order) {
@@ -466,9 +467,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             var order = order || 'ascending';
 
             if (order == 'descending') {
-                var set = quickSort(this.grepItems(key), key, 1);
+                var set = vanillaSort(this.grepItems(key), key, 1);
             } else {
-                var set = quickSort(this.grepItems(key), key);
+                var set = vanillaSort(this.grepItems(key), key);
             }
             this._orderChange(set, hideOthers);
         },
@@ -651,8 +652,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         return hex.length == 1 ? "0" + hex : hex;
     }
 
-    function quickSort(objArry, key, oSwitch) {
+    function vanillaSort( objArry, key, oSwitch ,typeShift ) {
         //oSwitch designates the collection order
+        var typeShift = typeShift || function(t){return t};
         var oSwitch = oSwitch || 0;
         var collections = [];
         collections[0] = [];
@@ -663,19 +665,19 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         }
 
         var pivot = Math.floor(objArry.length / 2);
-        var pivotVal = objArry[pivot][key];
+        var pivotVal = typeShift( objArry[pivot][key] );
         var pivotItem = objArry.splice(pivot, 1)[0];
 
         for (var i = 0; i < objArry.length; i++) {
-
-            if (objArry[i][key] <= pivotVal) {
+            var point = typeShift( objArry[i][key] );
+            if (point <= pivotVal) {
                 collections[0 + oSwitch].push(objArry[i]);
-            } else if (objArry[i][key] > pivotVal) {
+            } else if (point > pivotVal) {
                 collections[1 - oSwitch].push(objArry[i]);
             }
         }
 
-        return quickSort(collections[0], key, oSwitch).concat(pivotItem, quickSort(collections[1], key, oSwitch));
+        return vanillaSort(collections[0], key, oSwitch,typeShift).concat(pivotItem, vanillaSort(collections[1], key, oSwitch,typeShift));
     }
 
     function css(a) { //Improved Version. Gets the computed style for the properties which may affect the grid object

@@ -1,5 +1,5 @@
 /**
-	Hexdgrid 0.2.4 ( Beta version ) Module loader
+	Hexdgrid 0.2.5 ( Beta version ) Module loader
 	This is the HxdGrid module loader. It checks for previously included script modules and then allows the hexgrid to load an appropriate module for a given option setting
 	Copyright (c) 2015 Antoni Atanasov 
 	License:  The current version project is licensed under GPLv3

@@ -1,5 +1,5 @@
 /**
-	Hexdgrid 0.2.4 ( Beta version ) Hex clip module
+	Hexdgrid 0.2.5 ( Beta version ) Hex clip module
 	This HxdGrid module applies a SVG hex clipping mask
 	Copyright (c) 2015 Antoni Atanasov 
 	License:  The current version project is licensed under GPLv3

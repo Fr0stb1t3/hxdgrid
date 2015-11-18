@@ -1,5 +1,5 @@
 /**
-	Hexdgrid 0.2.4 ( Beta version ) Hex  module
+	Hexdgrid 0.2.5 ( Beta version ) Hex  module
 	This HxdGrid module applies a border hex object.
 	Copyright (c) 2015 Antoni Atanasov 
 	License:  The current version project is licensed under GPLv3
