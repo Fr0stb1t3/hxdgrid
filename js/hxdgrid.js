@@ -13,24 +13,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 
 (function($) {
 	  
-	  /* IE console out fix Ignore this bit*/
-	  var methods = ["assert", "cd", "clear", "count", "countReset",
-		"debug", "dir", "dirxml", "error", "exception", "group", "groupCollapsed",
-		"groupEnd", "info", "log", "markTimeline", "profile", "profileEnd",
-		"select", "table", "time", "timeEnd", "timeStamp", "timeline",
-		"timelineEnd", "trace", "warn"];
-	  var length = methods.length;
-	  var console = (window.console = window.console || {});
-	  var method;
-	  var noop = function() {};
-	  while ( length-- ) {
-		method = methods[length];
-		// define undefined methods as noops to prevent errors
-		if (!console[method])
-		  console[method] = noop;
-	  }
-	/*End of IE FIX FLUFF*/
-	
     /** Global vars **/
 	var gridIdCounter = 0;
 	/* Core Grid Object */
@@ -41,12 +23,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		_this.resizeLock = true;
 		_this.items=[];
 		$el.addClass('hxdGridContainer');
-		/*  list-style: none;
-		  width: 100%;
-		  height: 100%;
-		  overflow: hidden;
-		  position: relative;
-		  */
 		$el.get(0).setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
 		
 		_this.setOptions(options);
@@ -70,7 +46,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 						_this.resizeLock = true;
 					});
 				}
-				//console.log('Done resizing');
+				//HxdWarning('Done resizing');
 			}               
 		}
 		window.addEventListener('resize', function(event){
@@ -113,14 +89,14 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			  if( validHex(options.cellBgColor)  ){
 				  this.cellBgColor = ( options && options.cellBgColor );
 			  }else{
-				  //console.log('Error.Options.Invalid color ('+options.cellBgColor+') provided. Input ignored. Please provide a valid hex string');
+				  throw new HxdException('HxdError -> Options.Invalid color ('+options.cellBgColor+') provided. Input ignored. Please provide a valid hex string');
 			  }
 		},
 		addAttr: function(key, value){
 			if( !this.hasOwnProperty(key) ){
 				this[key] = value;
 			}else{
-				//console.log('Attempting to override property. Use setAttribute instead');
+				throw new HxdException('HxdError -> Object function. Attempting to override property. Use setAttribute instead');
 			}
 		},
 		_passNodeAttributes: function(nNodeMap){
@@ -181,7 +157,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					this.animateOver(xCor, yCor );
 				}else{
 					if ( this.cssAnim ) {
-						console.log('cssFade');
+						HxdWarning('cssFade');
 						this.fadeOver(xCor,yCor, $elem);
 					}else{
 						$elem.filter(':not(:animated)').fadeOut('normal',function(){
@@ -312,6 +288,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		hiddenItems: [],
 		gridId: null,
 		emptyGrid : false,
+		autoCenter : true,
 		emptyGridLength : 0,
 		reflowLock : true,
 		cellStyle: 0 ,
@@ -357,7 +334,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			if( _this.cellStyle == 0 ){
 				var sK = 	_this.items.length > 1 ? 1: 0;
 				if(sK == 0){
-					console.log('OPS one item in the grid. Are you sure you have it on the right dom element');
+					throw new HxdException('OPS one item in the grid. Are you sure you have it on the right dom element');
 				}
 				_this.cellStyle =  css( _this.items[sK].$elem ); //Used in mapGrid
 				
@@ -488,7 +465,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			return vanillaGrep( this.items ,cond );
 		},
 		orderByDateKey: function( key , hideOthers , order , splitter , dateFormat ){
-			var hideOthers = hideOthers || false;
+			var hideOthers 		= hideOthers || false;
 			var order 			= order || 'ascending';
 			var splitter 		= splitter || '.';
 			var dateFormat 		= dateFormat || 'DD-MM-YYYY';
@@ -514,10 +491,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 												return a[key] > b[key];
 											}
 										});
-										console.log(set);
+										HxdWarning(set);
 			this._orderChange(set, hideOthers);
 		},
-		_orderChange( set, hideOthers){
+		_orderChange: function( set, hideOthers){
 			var ordered = [];
 			var hidden = [];
 			for(var i = 0,  len = set.length; i < len; i++ ){
@@ -574,18 +551,22 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var mrgL = parseInt(this.cellStyle['margin-left'] || 0),
 				mrgR = parseInt(this.cellStyle['margin-right'] || 0);
 				
-			var xOffset = parseInt(this.cellStyle.width) + ( mrgL ); + ( mrgR );
+			var xOffset = parseInt(this.cellStyle.width) + ( mrgL ) + ( mrgR );
 			var cols = Math.floor(w / xOffset);
 			
-			var xInd = (w - ((cols) * xOffset) ) / 2;
-			
-			if( xInd > Math.abs(mrgL) * 2 )
-				xInd -= ( mrgL );
-			else{
-				xInd +=( mrgL / 2 );
-			}
-			if( items < cols ){ // Fix for 1 row grids
-				xInd = xInd +(xOffset * ( ( cols-items )/2 ) );
+			if( this.autoCenter ){
+				var xInd = (w - ((cols) * xOffset) ) / 2;
+				
+				if( xInd > Math.abs(mrgL) * 2 )
+					xInd -= ( mrgL );
+				else{
+					xInd +=( mrgL / 2 );
+				}
+				if( items < cols ){ // Fix for 1 row grids
+					xInd = xInd +(xOffset * ( ( cols-items )/2 ) );
+				}
+			}else{
+				var xInd = 0;	
 			}
 			
 			return {
@@ -630,12 +611,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var ids = id.split("@");
 			var grid  = hxdGrids[ parseInt(ids[1]) ];
 			if( typeof grid === 'undefined'  ){
-				console.error('Hexdgrid:Access error. Invalid grid id. Grid_ID:'+ids[1]+'  RAW'+id)
+				throw new HxdException('Hexdgrid->Access error. Invalid grid id. Grid_ID:'+ids[1]+'  RAW'+id)
 				return 0;
 			}
 			var item = grid.items[ parseInt(ids[0]) ];
 			if(  typeof item === 'undefined' ) {
-				console.error('Hexdgrid:Access error. Invalid item id. Item_ID: '+ids[0]+' RAW:'+id)
+				throw new HxdException('Hexdgrid->Access error. Invalid item id. Item_ID: '+ids[0]+' RAW:'+id)
 				return 0;
 			}
 			return hxdGrids[ parseInt(ids[1]) ]
@@ -647,6 +628,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		return (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(inp));
 	}
 	function rgbToHexString(string) {
+		if( string=='transparent' ){return '';};
 		 var RGB = string.split("(")[1].split(")")[0].split(",");
 		 return rgbToHex( RGB[0], RGB[1], RGB[2] );
 	}
@@ -676,15 +658,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	
 	function hxMerge(key, a, b, c ) {
 		c = c || [];
-		console.log('merging');
-		console.log(c);
+		HxdWarning('merging');
+		HxdWarning(c);
 		if(!a.length && !b.length) return c;
 
 		c.push(a[0][key] < b[0][key] || isNaN(b[0][key]) ? a.shift() : b.shift());
 		return hxMerge(key,a, b, c);
 	}
 	function hxMsort( itemArr , key ){
-		console.log(itemArr);
+		HxdWarning(itemArr);
 		var mid = (itemArr.length / 2) << 0;
 		if(!mid  ) return itemArr; //|| (  Object.prototype.toString.call( itemArr ) !=='[object Array]')
 		return hxMerge(
@@ -771,6 +753,31 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		setTimeout( function () {
 				elem.style.left = left ;
 			}, delay);
+	}
+	function HxdException(message) {
+	   this.message = message;
+	   this.name = "HxdException";
+	}
+	function HxdWarning(text){
+		/* IE console out fix Ignore this bit*/
+		  var methods = ["assert", "cd", "clear", "count", "countReset",
+			"debug", "dir", "dirxml", "error", "exception", "group", "groupCollapsed",
+			"groupEnd", "info", "log", "markTimeline", "profile", "profileEnd",
+			"select", "table", "time", "timeEnd", "timeStamp", "timeline",
+			"timelineEnd", "trace", "warn"];
+		  var length = methods.length;
+		  var console = (window.console = window.console || {});
+		  var method;
+		  var noop = function() {};
+		  while ( length-- ) {
+			method = methods[length];
+			// define undefined methods as noops to prevent errors
+			if (!console[method])
+			  console[method] = noop;
+		  }
+		/*End of IE FIX FLUFF*/
+		
+		console.log(text);
 	}
 })(jQuery);
 
