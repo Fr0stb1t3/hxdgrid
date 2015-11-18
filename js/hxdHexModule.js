@@ -17,6 +17,7 @@ var HxdHexModule = (function() {
 			this.create(this);
 	},
 	protoOb :{
+		hxScale: '',
 		create: function(_this, hxScale) {
 			var styleOver ='',
 				classVar = 'hxHex',
@@ -44,6 +45,17 @@ var HxdHexModule = (function() {
 			
 			_this.$elem.prepend('<div class="hxLeft"'+styleOver[1]+'></div>');
 			_this.$elem.append('<div class="hxRight"'+styleOver[2]+'></div>');
+		},
+		setOptions: function(options) {
+		  this.hxScale = ( options && options.hxScale)  || this.hxScale;
+		  this.autoBind = ( options && options.autoBind ) || this.autoBind;
+		  
+		  if( typeof  options.bgColor !== 'undefined' && options.bgColor != 0)
+			  if( validHex(options.bgColor)  ){
+				  this.bgColor = ( options && options.bgColor );
+			  }else{
+				  throw new HxdException('HxdError -> Options.Invalid color ('+options.bgColor+') provided. Input ignored. Please provide a valid hex string');
+			  }
 		},
 		hexStyleOverride: function( _this ){
 			if( typeof  _this.cellBgColor !== 'undefined' && _this.cellBgColor !==0){

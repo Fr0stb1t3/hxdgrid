@@ -1,5 +1,5 @@
 /**
-	Hexdgrid 0.2.4 ( Beta version )
+	HxdGrid 0.2.4 ( Beta version )
 	HxdGrid is a front end script for ordering and sorting elements in a responsive grid layout.
 	Copyright (c) 2015 Antoni Atanasov 
 	License:  The current version project is licensed under GPLv3 at a later stage this may change to a dual license
@@ -17,47 +17,22 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	var gridIdCounter = 0;
 	/* Core Grid Object */
 	var HxdGrid =  function(jQuery, $el, options) {
-		var _this = this;
-		_this._id = gridIdCounter;
-		_this.$el= $el;
-		_this.resizeLock = true;
-		_this.items=[];
-		$el.addClass('hxdGridContainer');
-		$el.get(0).setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
-		
-		_this.setOptions(options);
-		_this.create(jQuery, _this);
-		
-		
-		/* CLEANUP REQUIRED */
-		var rtime;
-		var timeout = false;
-		var delta = 200;
-		
-		function resizeEnd() {
-			if ( new Date() - rtime < delta ) {
-				setTimeout(resizeEnd, delta);
-			} else {
-				timeout = false;
+		 try{
+               var _this = this;
+				_this._id = gridIdCounter;
+				_this.$el= $el;
+				_this.resizeLock = true;
+				_this.items=[];
+				$el.addClass('hxdGridContainer');
+				$el.get(0).setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
 				
-				if (_this.resizeLock) {
-					_this.resizeLock = false;
-					_this.reflowHexRows(function() {
-						_this.resizeLock = true;
-					});
-				}
-				//HxdWarning('Done resizing');
-			}               
-		}
-		window.addEventListener('resize', function(event){
-				rtime = new Date();
-				if (timeout === false) {
-					timeout = true;
-					setTimeout(resizeEnd, delta);
-				}
-		});
-		/*END Of messy Block */
-		gridIdCounter++;
+				_this.setOptions(options);
+				_this.create(jQuery, _this);
+				hxResizeBind(_this);
+				gridIdCounter++;
+		   }catch ( e ) {
+			  throw new HxdException('HxdGrid-> Grid initialization error. Detais: '+e);
+		   }
 	};
 	/* Core item object and prototype */
 	var HxdItem = function($elem,cellOptions) {
@@ -67,29 +42,27 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			this.cssAnim = false;
 		}
 		this.harwareAccelaration = false;//Triggers the hardware acceleration css
-		this.setOptions(cellOptions);
+		this.setOptions( cellOptions );
 		this.create(this);
 	}
 	HxdItem.prototype = {
 		/* Base prototype. All the properties and methods in this object are shared between other variations */
 		_id: 0, /* {itemCounter}@{PARENT_ID} */
 		$elem: null,
-		hxScale: '',
 		startPos: null,
-		cellBgColor: 0,
+		bgColor: 0,
 		hexMode: false,
-		viewportFading: true,
+		viewFade: true,
 		xCor: 0,
 		yCor: 0,
 		setOptions: function(options) {
-		  this.hxScale = ( options && options.hxScale)  || this.hxScale;
 		  this.autoBind = ( options && options.autoBind ) || this.autoBind;
 		  
-		  if( typeof  options.cellBgColor !== 'undefined' && options.cellBgColor != 0)
-			  if( validHex(options.cellBgColor)  ){
-				  this.cellBgColor = ( options && options.cellBgColor );
+		  if( typeof  options.bgColor !== 'undefined' && options.bgColor != 0)
+			  if( validHex(options.bgColor)  ){
+				  this.bgColor = ( options && options.bgColor );
 			  }else{
-				  throw new HxdException('HxdError -> Options.Invalid color ('+options.cellBgColor+') provided. Input ignored. Please provide a valid hex string');
+				  throw new HxdException('HxdError -> Options.Invalid color ('+options.bgColor+') provided. Input ignored. Please provide a valid hex string');
 			  }
 		},
 		addAttr: function(key, value){
@@ -110,12 +83,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				}
 			}
 		},
-		create: function(_this, hxScale) {
+		create: function(_this) {
 			var styleOver ='';
 			if( typeof  css(_this.$elem)[ 'background-color' ]!== 'undefined' ){
 				var styleCol = rgbToHexString( css( _this.$elem )['background-color']);
 				if( validHex( styleCol )  ){
-					_this.cellBgColor = styleCol;
+					_this.bgColor = styleCol;
 					//_this.$elem.addClass('hxdColOverride');
 					styleOver =  _this.colStyleOverride(_this);
 				}
@@ -144,8 +117,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			}
 		},
 		colStyleOverride: function( _this ){
-			if( typeof  _this.cellBgColor !== 'undefined' && _this.cellBgColor !==0){
-				return 'style="background:' + _this.cellBgColor+'"';
+			if( typeof  _this.bgColor !== 'undefined' && _this.bgColor !==0){
+				return 'style="background:' + _this.bgColor+'"';
 			}
 		},
 		moveTo: function( xCor, yCor, $elem ) {
@@ -153,7 +126,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var xCor = xCor;  
 			var yCor = yCor;  
 			if ( (typeof $elem.attr('style') !== 'undefined') && $elem.get(0).style.position=='absolute' ) { 
-				if ( this.moveInViewport( xCor, yCor ) || !this.viewportFading ) {//this.isElementInViewport()
+				if ( this.moveInViewport( xCor, yCor ) || !this.viewFade ) {//this.isElementInViewport()
 					this.animateOver(xCor, yCor );
 				}else{
 					if ( this.cssAnim ) {
@@ -308,7 +281,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		  /* Item options*/
 		  this.cellOptions.hxScale 		= ( options && options.hxScale) 	|| 'hxd-xl';
 		  this.cellOptions.autoBind 	= ( options && options.autoBind) 	|| 0;
-		  this.cellOptions.cellBgColor 	= ( options && options.cellBgColor) || 0;
+		  this.cellOptions.bgColor 	= ( options && options.bgColor) || 0;
 		},
 		/**
 		*	create
@@ -551,7 +524,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var mrgL = parseInt(this.cellStyle['margin-left'] || 0),
 				mrgR = parseInt(this.cellStyle['margin-right'] || 0);
 				
-			var xOffset = parseInt(this.cellStyle.width) + ( mrgL ) + ( mrgR );
+			var xOffset = parseInt(this.cellStyle.width) + ( mrgL ) ;//+ ( mrgR );
 			var cols = Math.floor(w / xOffset);
 			
 			if( this.autoCenter ){
@@ -608,22 +581,46 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			return hxdGrids[id];
 		}
 		window.getHxItemById = function (id){
-			var ids = id.split("@");
-			var grid  = hxdGrids[ parseInt(ids[1]) ];
-			if( typeof grid === 'undefined'  ){
-				throw new HxdException('Hexdgrid->Access error. Invalid grid id. Grid_ID:'+ids[1]+'  RAW'+id)
-				return 0;
-			}
-			var item = grid.items[ parseInt(ids[0]) ];
-			if(  typeof item === 'undefined' ) {
-				throw new HxdException('Hexdgrid->Access error. Invalid item id. Item_ID: '+ids[0]+' RAW:'+id)
-				return 0;
-			}
-			return hxdGrids[ parseInt(ids[1]) ]
+			 try{
+                 var ids = id.split("@");
+				 var grid  = hxdGrids[ parseInt(ids[1]) ];
+				 var item  = grid.items[ parseInt(ids[0]) ];
+                 if(  typeof item === 'undefined' ) {
+					HxdWarning('HxdGrid->Access error. Invalid item id. Item_ID: '+ids[0]+' RAW:'+id)
+					return 0;
+				 }
+				 return hxdGrids[ parseInt(ids[1]) ]
 					.items[ parseInt(ids[0]) ];
+               }
+               catch ( e ) {
+                  throw new HxdException('HxdGrid->Access error. Invalid ID format. The correct format is ITEM_ID@GRID_ID. Current input '+id+'. Exception details '+e);
+               }
 		}
 	}
 	/* General purpose functions */
+	function hxResizeBind( _this ){
+		var rtime, 
+			timeout = false, 
+			delta = 200;
+		function resizeEnd() {
+			if ( new Date() - rtime < delta ) {
+				setTimeout(resizeEnd, delta);
+			} else {
+				timeout = false;
+				if (_this.resizeLock) {
+					_this.resizeLock = false;
+					_this.reflowHexRows(function() { _this.resizeLock = true; });
+				}
+			}               
+		}
+		window.addEventListener('resize', function(event){
+				rtime = new Date();
+				if (timeout === false) {
+					timeout = true;
+					setTimeout(resizeEnd, delta);
+				}
+		});
+	}
 	function validHex(inp){
 		return (/(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(inp));
 	}
@@ -758,6 +755,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 	   this.message = message;
 	   this.name = "HxdException";
 	}
+	HxdException.prototype = new Error; 
 	function HxdWarning(text){
 		/* IE console out fix Ignore this bit*/
 		  var methods = ["assert", "cd", "clear", "count", "countReset",
