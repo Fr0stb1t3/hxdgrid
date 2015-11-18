@@ -1,4 +1,4 @@
-# hxdGrid (beta)
+# hxdGrid 
 
 HxdGrid is a front end script for ordering and sorting elements in a responsive grid layout. The implementation is object based and allows easy customization of the appearance, animation and style of the div elements.
 
