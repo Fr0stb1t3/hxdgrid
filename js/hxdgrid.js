@@ -39,6 +39,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		this.$elem = $elem;
 		this.cssAnim = true;
 		if( msieversion() ){//IE FIX disable CSS animations
+			//HxdWarning('CSS animations not supported with IE.Fallback to javascript');
 			this.cssAnim = false;
 		}
 		this.harwareAccelaration = false;//Triggers the hardware acceleration css
@@ -51,25 +52,25 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		$elem: null,
 		startPos: null,
 		bgColor: 0,
-		hexMode: false,
-		viewFade: true,
 		xCor: 0,
 		yCor: 0,
 		setOptions: function(options) {
+			
+		  this.viewFade = ( options && options.viewFade ) || this.viewFade;
 		  this.autoBind = ( options && options.autoBind ) || this.autoBind;
 		  
 		  if( typeof  options.bgColor !== 'undefined' && options.bgColor != 0)
 			  if( validHex(options.bgColor)  ){
 				  this.bgColor = ( options && options.bgColor );
 			  }else{
-				  throw new HxdException('HxdError -> Options.Invalid color ('+options.bgColor+') provided. Input ignored. Please provide a valid hex string');
+				  HxdWarning('HxdError -> Options.Invalid color ('+options.bgColor+') provided. Input ignored. Please provide a valid hex string');
 			  }
 		},
 		addAttr: function(key, value){
 			if( !this.hasOwnProperty(key) ){
 				this[key] = value;
 			}else{
-				throw new HxdException('HxdError -> Object function. Attempting to override property. Use setAttribute instead');
+				HxdWarning('HxdError -> Object function. Attempting to override property. Use setAttribute instead');
 			}
 		},
 		_passNodeAttributes: function(nNodeMap){
@@ -89,15 +90,13 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				var styleCol = rgbToHexString( css( _this.$elem )['background-color']);
 				if( validHex( styleCol )  ){
 					_this.bgColor = styleCol;
-					//_this.$elem.addClass('hxdColOverride');
 					styleOver =  _this.colStyleOverride(_this);
 				}
 			}
-			modeVar='hxDefault';
+			modeVar='';
 			_this.$elem.wrapInner(
-				"<div class='hxMiddle "+modeVar+"' "+styleOver+"><div class='inner'></div></div>"
+				"<div class='hxContent "+modeVar+"' "+styleOver+"></div>"
 			);
-			
 		},
 		getXY: function(){
 			return [ this.xCor, this.yCor ];
@@ -130,7 +129,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 					this.animateOver(xCor, yCor );
 				}else{
 					if ( this.cssAnim ) {
-						HxdWarning('cssFade');
+						//HxdWarning('cssFade');
 						this.fadeOver(xCor,yCor, $elem);
 					}else{
 						$elem.filter(':not(:animated)').fadeOut('normal',function(){
@@ -236,7 +235,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				( rect.bottom - tO ) <= ( (window.innerHeight + visOffset ) || (document.documentElement.clientHeight + visOffset ) ) && 
 				( rect.right - lO ) <= ( ( window.innerWidth + visOffset ) || (document.documentElement.clientWidth + visOffset ) ) 
 			);
-		 } ,
+		 },
 		 hxGetYOffset:function(cellStyle) {
             var y1 = parseInt( cellStyle.height ) * 1.015;
             return [
@@ -255,13 +254,11 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		_id: 0,
 		$: null,
 		$el: null,
-		clipping: 0, 
 		resize: true,  
 		selector:  '.hxdItem',
 		hiddenItems: [],
 		gridId: null,
 		emptyGrid : false,
-		autoCenter : true,
 		emptyGridLength : 0,
 		reflowLock : true,
 		cellStyle: 0 ,
@@ -269,19 +266,20 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		setOptions: function(options) {
 			
 		  /*container options */
-		  this.clipping 	= ( options && options.clipping) 		|| this.clipping;
-		  this.resize 		= ( options && options.resize) 			|| this.resize;
-		  this.selector 	= ( options && options.selector) 		|| this.selector;
-		  this.hexMode 		= ( options && options.hexMode) 		|| this.hexMode;
-		  this.reflowLock 	= ( options && options.reflowLock) 		|| this.reflowLock;
-		  this.emptyGrid 	= ( options && options.emptyGrid) 		|| this.emptyGrid;
-		  this.emptyGridLength 	= ( options && options.emptyGridLength) || this.emptyGridLength;
+		  this.autocenter 		= ( options && options.autocenter!== false) || false;
+		  this.clipping 		= ( options && options.clipping) 			|| this.clipping;// <-- At the moment only used in clip modules
+		  this.resize 			= ( options && options.resize) 				|| this.resize;
+		  this.selector 		= ( options && options.selector) 			|| this.selector;
+		  this.hexMode 			= ( options && options.hexMode) 			|| this.hexMode;
+		  this.reflowLock 		= ( options && options.reflowLock) 			|| this.reflowLock;
+		  this.emptyGrid 		= ( options && options.emptyGrid) 			|| this.emptyGrid;
+		  this.emptyGridLength 	= ( options && options.emptyGridLength) 	|| this.emptyGridLength;
 		
-		 
 		  /* Item options*/
-		  this.cellOptions.hxScale 		= ( options && options.hxScale) 	|| 'hxd-xl';
-		  this.cellOptions.autoBind 	= ( options && options.autoBind) 	|| 0;
-		  this.cellOptions.bgColor 	= ( options && options.bgColor) || 0;
+		  this.cellOptions.hxScale 		= ( options && options.hxScale) 	|| 'hxd-xl';// <-- At the moment only used in some modules
+		  this.cellOptions.autoBind 	= ( options && options.autoBind) 	|| false;
+		  this.cellOptions.bgColor 		= ( options && options.bgColor) 	|| 0;
+		  this.cellOptions.viewFade 	= ( options && options.viewFade) 	|| false;
 		},
 		/**
 		*	create
@@ -446,10 +444,13 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 										sort(function(a, b){
 											var aDate = Date.parse( hxDateFormat(  a[key] , splitter , dateFormat ) );
 											var bDate = Date.parse( hxDateFormat(  b[key] , splitter , dateFormat ) );
-											if( order=='descending' )
-												return aDate < bDate ;
-											else
-												return aDate > bDate ;
+											if( order=='descending' ){
+												//console.log((aDate < bDate) ? 1 : -1);
+												return (aDate < bDate) ? 1 : -1;//Safari jquery sort fix
+											}else{
+												//console.log((aDate > bDate) ? 1 : -1);
+												return (aDate > bDate) ? 1 : -1;
+											}
 										});
 			this._orderChange(set, hideOthers);
 		},
@@ -459,9 +460,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var set = this.grepItems(key).
 										sort(function(a, b){
 											if( order=='descending' ){
-												return a[key] < b[key];
+												return (a[key] < b[key]) ? 1 : -1;
 											}else{
-												return a[key] > b[key];
+												return (a[key] > b[key]) ? 1 : -1;
 											}
 										});
 										HxdWarning(set);
@@ -527,7 +528,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var xOffset = parseInt(this.cellStyle.width) + ( mrgL ) ;//+ ( mrgR );
 			var cols = Math.floor(w / xOffset);
 			
-			if( this.autoCenter ){
+			if( this.autocenter ){
 				var xInd = (w - ((cols) * xOffset) ) / 2;
 				
 				if( xInd > Math.abs(mrgL) * 2 )
@@ -735,7 +736,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 				filtered.push(item);
 			}
 		}
-
 		return filtered;
 	}
 	

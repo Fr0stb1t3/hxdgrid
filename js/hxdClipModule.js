@@ -48,6 +48,7 @@ var HxdClipModule = (function() {
 			clipPath: 0,
 			clipPathObj: 0,
 			cssAnim: false,
+			hxScale: 'hxd-m',
 			clipPathPObj: 0,
 			create: function( _this, hxScale ) {
 				var styleOver ='',
@@ -104,6 +105,17 @@ var HxdClipModule = (function() {
 					});
 				}
 			},
+			setOptions: function(options) {
+				  this.hxScale = ( options && options.hxScale)  || this.hxScale;
+				  this.autoBind = ( options && options.autoBind ) || this.autoBind;
+				  
+				  if( typeof  options.bgColor !== 'undefined' && options.bgColor != 0)
+					  if( validHex(options.bgColor)  ){
+						  this.bgColor = ( options && options.bgColor );
+					  }else{
+						  throw new HxdException('HxdError -> Options.Invalid color ('+options.bgColor+') provided. Input ignored. Please provide a valid hex string');
+					  }
+				},
 			hxClipPathPerc:function(points, options,_this) {
 				_this = _this || this;
 				var $el = _this.$elem.find('.hxClip');
