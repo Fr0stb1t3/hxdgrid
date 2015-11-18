@@ -63,10 +63,10 @@
 			var demoGrid = getHxGridObj(0); // Get the correct grid container object
 			//var demoGrid3 = getHxItemById("155@0"); // Get the correct grid container object
 			$('#dateSort').click(function(){
-				demoGrid.orderByDateKey('date' , false , 'DESC' );
+				demoGrid.orderByDateKey('date' , false , 'ascending' );
 			});
 			$('#letterSort').click(function(){
-				demoGrid.orderByKey('letter' , true , 'DESC' );
+				demoGrid.orderByKey('letter' , true , 'ascending' );
 			});
 			$('#resetOrder').click(function(){
 				demoGrid.resetOrder();

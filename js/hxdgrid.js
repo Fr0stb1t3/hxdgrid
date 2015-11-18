@@ -440,32 +440,24 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 			var order 			= order || 'ascending';
 			var splitter 		= splitter || '.';
 			var dateFormat 		= dateFormat || 'DD-MM-YYYY';
-			var set = this.grepItems(key).
-										sort(function(a, b){
-											var aDate = Date.parse( hxDateFormat(  a[key] , splitter , dateFormat ) );
-											var bDate = Date.parse( hxDateFormat(  b[key] , splitter , dateFormat ) );
-											if( order=='descending' ){
-												//console.log((aDate < bDate) ? 1 : -1);
-												return (aDate < bDate) ? 1 : -1;//Safari jquery sort fix
-											}else{
-												//console.log((aDate > bDate) ? 1 : -1);
-												return (aDate > bDate) ? 1 : -1;
-											}
-										});
+			var set = quickSort(this.grepItems(key), key );	
+			
+			if( order=='descending' ){
+				var set = quickSort(this.grepItems(key), key , 1 );	
+			}else{							
+				var set = quickSort(this.grepItems(key), key );	
+			}
 			this._orderChange(set, hideOthers);
 		},
 		orderByKey: function( key, hideOthers, order ){
 			var hideOthers 		= hideOthers || false;
 			var order 			= order || 'ascending';
-			var set = this.grepItems(key).
-										sort(function(a, b){
-											if( order=='descending' ){
-												return (a[key] < b[key]) ? 1 : -1;
-											}else{
-												return (a[key] > b[key]) ? 1 : -1;
-											}
-										});
-										HxdWarning(set);
+			
+			if( order == 'descending' ){
+				var set = quickSort(this.grepItems(key), key , 1 );	
+			}else{							
+				var set = quickSort(this.grepItems(key), key );	
+			}						
 			this._orderChange(set, hideOthers);
 		},
 		_orderChange: function( set, hideOthers){
@@ -638,40 +630,29 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' 	? 0 : HxdModuleLoa
 		var hex = c.toString(16);
 		return hex.length == 1 ? "0" + hex : hex;
 	}
-	function merge(a, b, c) {
-		c = c || [];
-		if(!a.length && !b.length) return c;
 
-		c.push(a[0] < b[0] || isNaN(b[0]) ? a.shift() : b.shift());
-		return merge(a, b, c);
-	}
-
-	function msort(inp) {
-		var mid = (inp.length / 2) << 0;
-		if(!mid) return inp;
-		return merge(
-			msort(inp.slice(0, mid)),
-			msort(inp.slice(mid)));
-	}
-	
-	function hxMerge(key, a, b, c ) {
-		c = c || [];
-		HxdWarning('merging');
-		HxdWarning(c);
-		if(!a.length && !b.length) return c;
-
-		c.push(a[0][key] < b[0][key] || isNaN(b[0][key]) ? a.shift() : b.shift());
-		return hxMerge(key,a, b, c);
-	}
-	function hxMsort( itemArr , key ){
-		HxdWarning(itemArr);
-		var mid = (itemArr.length / 2) << 0;
-		if(!mid  ) return itemArr; //|| (  Object.prototype.toString.call( itemArr ) !=='[object Array]')
-		return hxMerge(
-			key,
-			hxMsort(itemArr.slice(0, mid),key),
-			hxMsort(itemArr.slice(mid),key)
-			);
+	function quickSort(objArry , key,oSwitch) {
+		//oSwitch designates the collection order
+		var oSwitch = oSwitch || 0;
+		var collections = [];
+			collections[0] = [];
+			collections[1] = [];
+		
+		if (objArry.length < 2) {
+			return objArry;
+		}
+		
+		var pivot = Math.floor(objArry.length / 2);
+		var pivotVal = objArry[pivot][key];
+		var pivotItem = objArry.splice(pivot, 1)[0];
+		
+		for (var i = 0; i < objArry.length; i++) {
+		 
+			if (objArry[i][key] <= pivotVal) { collections[0+oSwitch].push(objArry[i]); }
+			else if (objArry[i][key] > pivotVal) { collections[1-oSwitch].push(objArry[i]); }
+		}
+		
+		return quickSort(collections[0], key,oSwitch).concat(pivotItem, quickSort(collections[1],key,oSwitch));
 	}
     function css(a) { //Improved Version. Gets the computed style for the properties which may affect the grid object
 		//Current Input jquery object. Future change would be for the function will not use the dom object directly
