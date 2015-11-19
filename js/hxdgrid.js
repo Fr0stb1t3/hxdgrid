@@ -33,6 +33,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
     /* Core item object and prototype */
     var HxdItem = function($elem, cellOptions) {
         this.$elem = $elem;
+        this.domElem = $elem.get(0);
         this.cssAnim = false;
         if (msieversion()) { //IE FIX disable CSS animations
             //HxdWarning('CSS animations not supported with IE.Fallback to javascript');
@@ -46,6 +47,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             /* Base prototype. All the properties and methods in this object are shared between other variations */
             uid: 0,
             $elem: null,
+            domElem: null,
             startPos: null,
             bgColor: 0,
             xCor: 0,
@@ -82,8 +84,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             },
             create: function(_this) {
                 var styleOver = '';
-                if (typeof css(_this.$elem)['background-color'] !== 'undefined') {
-                    var styleCol = rgbToHexString(css(_this.$elem)['background-color']);
+                if (typeof css(_this.domElem)['background-color'] !== 'undefined') {
+                    var styleCol = rgbToHexString( css(_this.domElem)['background-color'] );
                     if (validHex(styleCol)) {
                         _this.bgColor = styleCol;
                         styleOver = _this.colStyleOverride(_this);
@@ -121,15 +123,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             },
             moveTo: function(xCor, yCor, $elem) {
                 var $elem = $elem || this.$elem;
+                var domElem = $elem.get(0);
                 var xCor = xCor;
                 var yCor = yCor;
-                if ((typeof $elem.attr('style') !== 'undefined') && $elem.get(0).style.position == 'absolute') {
+                if ((typeof domElem.getAttribute('style') !== 'undefined') && domElem.style.position == 'absolute') {
                     if (this.moveInViewport(xCor, yCor) || !this.viewFade) { //this.isElementInViewport()
                         this.animateOver(xCor, yCor);
                     } else {
                         if (this.cssAnim) {
-                            //HxdWarning('cssFade');
-                            this.fadeOver(xCor, yCor, $elem);
+                            this.fadeOver(xCor, yCor, domElem);
                         } else {
                             $elem.filter(':not(:animated)').fadeOut('normal', function() {
                                 $elem.css({
@@ -141,66 +143,49 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                         }
                     }
                 } else {
-                    $elem.attr('style', 'margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
+                    domElem.setAttribute('style', 'margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
                 }
                 this.xCor = xCor;
                 this.yCor = yCor;
             },
-            animateOver: function(xCor, yCor, $elem) {
-                var $elem = $elem || this.$elem;
+            animateOver: function(xCor, yCor, domElem) {
+                var domElem = domElem || this.domElem;
+                
                 if (!this.cssAnim) {
-                    if ($elem.position() < yCor) {
-                        vanillaAnimate($elem.get(0),'left',$elem.get(0).style.left,xCor, 500);
-                        vanillaAnimate($elem.get(0),'top',$elem.get(0).style.top,yCor, 500);/*
-                        $elem
-                            .filter(':not(:animated)')
-                            .animate({
-                                top: yCor
-                            }, 'normal')
-                            .animate({
-                                left: xCor
-                            }, 'normal');*/
+                    if (domElem.style.top < yCor) {
+                        vanillaAnimate(domElem,'left',domElem.style.left,xCor, 500);
+                        vanillaAnimate(domElem,'top',domElem.style.top,yCor, 500);
                     } else {
-                        vanillaAnimate($elem.get(0),'left',$elem.get(0).style.left,xCor, 500);
-                        vanillaAnimate($elem.get(0),'top',$elem.get(0).style.top,yCor, 500);
-                        /*
-                        $elem
-                            .filter(':not(:animated)')
-                            .animate({
-                                left: xCor
-                            }, 'normal')
-                            .animate({
-                                top: yCor
-                            }, 'normal');*/
+                        vanillaAnimate(domElem,'left',domElem.style.left,xCor, 500);
+                        vanillaAnimate(domElem,'top',domElem.style.top,yCor, 500);
                     }
                 } else {
                     if (this.harwareAccelaration) {
-                        $elem.get(0).style.WebkitTransform = "  translate3d(0, 0, 0)";
-                        $elem.get(0).style.MozTransform = "  translate3d(0, 0, 0) "; // ease-out// ease
-                        $elem.get(0).style.transform = " translate3d(0, 0, 0) ";
+                        domElem.style.WebkitTransform = "  translate3d(0, 0, 0)";
+                        domElem.style.MozTransform = "  translate3d(0, 0, 0) "; // ease-out// ease
+                        domElem.style.transform = " translate3d(0, 0, 0) ";
                     }
-                    $elem.get(0).style.WebkitTransition = "  all 0.7s ease ";
-                    $elem.get(0).style.MozTransition = "  all 0.7s ease "; // ease-out// ease
-                    $elem.get(0).style.transition = " all 1s ease  ";
+                    domElem.style.WebkitTransition = "  all 0.7s ease ";
+                    domElem.style.MozTransition = "  all 0.7s ease "; // ease-out// ease
+                    domElem.style.transition = " all 1s ease  ";
                     var xPx = xCor + 'px';
                     var yPx = yCor + 'px';
-                    if ($elem.position() < yCor) {
-                        if ($elem.get(0).style.left != xPx)
-                            $elem.get(0).style.left = xPx;
+                    if (domElem.style.top < yCor) {
+                        if (domElem.style.left != xPx)
+                            domElem.style.left = xPx;
 
-                        if ($elem.get(0).style.top != yPx)
-                            delayedY($elem.get(0), yPx, 1000);
+                        if (domElem.style.top != yPx)
+                            delayedY(domElem, yPx, 1000);
                     } else {
-                        if ($elem.get(0).style.top != yPx)
-                            $elem.get(0).style.top = yPx;
-                        if ($elem.get(0).style.left != xPx)
-                            delayedX($elem.get(0), xPx, 1000);
+                        if (domElem.style.top != yPx)
+                            domElem.style.top = yPx;
+                        if (domElem.style.left != xPx)
+                            delayedX(domElem, xPx, 1000);
                     }
                 }
             },
-            fadeOver: function(xCor, yCor, $elem) {
-                var elem = $elem || this.$elem; //
-                elem = $elem.get(0);
+            fadeOver: function(xCor, yCor, elem) {
+                var elem = elem || this.domElem; //
                 elem.style.WebkitTransition = "  opacity  0.7s ease ";
                 elem.style.MozTransition = "  opacity  0.7s ease ";
                 elem.style.transition = " opacity  1 linear 0s ";
@@ -313,7 +298,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     _this.items[i] = new HxdItem($(this), _this.cellOptions); //Use default item
                 }
                 _this.items[i].uid = _this.uid + '@' + i;
-                _this.items[i]._passNodeAttributes($(this).get(0).attributes); //Used for sorting
+                _this.items[i]._passNodeAttributes( this.attributes ); //Used for sorting
             });
 
             if (_this.cellStyle == 0) {
@@ -321,7 +306,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 if (sK == 0) {
                     throw new HxdException('OPS one item in the grid. Are you sure you have it on the right dom element');
                 }
-                _this.cellStyle = css(_this.items[sK].$elem); //Used in mapGrid
+                _this.cellStyle = css( _this.items[sK].domElem ); //Used in mapGrid
 
                 if ((typeof _this.cellStyle.height === 'undefined')) {
                     _this.cellStyle.height = _this.cellStyle.width;
@@ -333,24 +318,19 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
 
         },
         _prepContainer: function() {
-            pos = this.$el.position();
-            boundingX = pos.left;
-            boundingY = pos.top;
             boundingH = (this.xyMap.rows * parseInt(this.cellStyle.height) + (parseInt(
                 this.cellStyle['margin-top']) || 0));
-
-            this.$el.find('.gridContent')
-                .css({
-                    'position': 'relative',
-                    'width': '100%',
-                    'height': boundingH
-                });
+               
+             ( vanillaClassFind( this.$el.get(0), 'gridContent' ) ).setAttribute('style', 'position:relative;width:100%;height:' + boundingH + 'px');
         },
         _boundaryWrap: function($elem, _this) {
             _this = _this || this;
             out = $elem.wrapInner("<div class='gridContent'></div>");
 
             var event = "binaryShift" + _this.uid;
+            // console.log( out.find('.gridContent') );
+            //console.log( vanillaClassFind(out.get(0), 'gridContent' ) );
+           
             out.find('.gridContent').bind(event, function(e, data) {
                 _this.orderSwap(data);
             });
@@ -368,7 +348,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
          *     When there is a change in the amount of rows it calls reflowCells passing the current order of elements
          */
         reflowHexRows: function(_callback) {
-            if (this.reflowLock) {
+            if ( this.reflowLock ) {
                 this.reflowLock = false; //First check
                 this.xyMap = this.mapGrid();
                 if (this.reflowLevel != this.xyMap.rows) { //Second check
@@ -511,15 +491,17 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
          **/
         mapGrid: function() {
             var cont = this.$el;
-            var h = cont.height(),
-                w = cont.width();
+            /* var h = cont.height(),
+                w = cont.width();*/
+            var h = cont.get(0).offsetHeight,
+                w = cont.get(0).offsetWidth;
             if (this.emptyGrid && this.emptyGridLength > 0) {
                 var items = this.emptyGridLength
             } else {
                 var items = this.items.length //(cont.find(this.selector)).length;
             }
-            var mrgL = parseInt(this.cellStyle['margin-left'] || 0),
-                mrgR = parseInt(this.cellStyle['margin-right'] || 0);
+            var mrgL = parseInt( this.cellStyle['margin-left'] || 0),
+                mrgR = parseInt( this.cellStyle['margin-right'] || 0);
 
             var xOffset = parseInt(this.cellStyle.width) + (mrgL); //+ ( mrgR );
             var cols = Math.floor(w / xOffset);
@@ -589,7 +571,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     return hxdGrids[parseInt(ids[1])]
                         .items[parseInt(ids[0])];
                 } catch (e) {
-                    throw new HxdException('HxdGrid->Access error. Invalid ID format. The correct format is ITEMuid@GRIDuid. Current input ' + id + '. Exception details ' + e);
+                    throw new HxdException( 'HxdGrid->Access error. Invalid ID format. The correct format is ITEMuid@GRIDuid. Current input ' + id + '. Exception details ' + e );
                 }
             }
         }
@@ -642,7 +624,17 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         var hex = c.toString(16);
         return hex.length == 1 ? "0" + hex : hex;
     }
-
+    function vanillaClassFind( doc ,classN ){
+        //var doc = document.getElementById("test");
+        var notes = null;
+        for (var i = 0; i < doc.childNodes.length; i++) {
+            if (doc.childNodes[i].className == classN) {
+              notes = doc.childNodes[i];
+              break;
+            }        
+        }
+        return notes;
+    }
     function vanillaAnimate(elem,style,start,end,time) {
         var unit = 'px';
         var start = parseInt(start);
@@ -699,7 +691,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             'margin-top',
             'margin-bottom'
         ]; //relevant properties
-        return getStyleProperties(a.get(0), propArr);
+        return getStyleProperties(a, propArr);
 
     }
 
