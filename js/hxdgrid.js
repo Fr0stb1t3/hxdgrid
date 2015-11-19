@@ -11,11 +11,7 @@
 var jQuery = jQuery || (require && require('jquery'));
 var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoader;
 (function($) {
-
-    /** Global vars **/
-
     var gridIdCounter = 0;
-    /* Core Grid Object */
     var HxdGrid = function(jQuery, $el, options) {
         try {
             var _this = this;
@@ -37,7 +33,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
     /* Core item object and prototype */
     var HxdItem = function($elem, cellOptions) {
         this.$elem = $elem;
-        this.cssAnim = true;
+        this.cssAnim = false;
         if (msieversion()) { //IE FIX disable CSS animations
             //HxdWarning('CSS animations not supported with IE.Fallback to javascript');
             this.cssAnim = false;
@@ -154,6 +150,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 var $elem = $elem || this.$elem;
                 if (!this.cssAnim) {
                     if ($elem.position() < yCor) {
+                        vanillaAnimate($elem.get(0),'left',$elem.get(0).style.left,xCor, 500);
+                        vanillaAnimate($elem.get(0),'top',$elem.get(0).style.top,yCor, 500);/*
                         $elem
                             .filter(':not(:animated)')
                             .animate({
@@ -161,8 +159,11 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                             }, 'normal')
                             .animate({
                                 left: xCor
-                            }, 'normal');
+                            }, 'normal');*/
                     } else {
+                        vanillaAnimate($elem.get(0),'left',$elem.get(0).style.left,xCor, 500);
+                        vanillaAnimate($elem.get(0),'top',$elem.get(0).style.top,yCor, 500);
+                        /*
                         $elem
                             .filter(':not(:animated)')
                             .animate({
@@ -170,7 +171,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                             }, 'normal')
                             .animate({
                                 top: yCor
-                            }, 'normal');
+                            }, 'normal');*/
                     }
                 } else {
                     if (this.harwareAccelaration) {
@@ -427,15 +428,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             }
 
         },
-        grepItemsJQ: function(key, val) {
-            return $.grep(this.items, function(hxI) {
-                if (typeof val !== 'undefined') {
-                    return hxI[key] === val;
-                } else {
-                    return hxI[key];
-                }
-            });
-        },
         grepItems: function(key, val) {
             var cond = function(hxI) {
                 if (typeof val !== 'undefined') {
@@ -452,12 +444,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             var splitter = splitter || '.';
             var dateFormat = dateFormat || 'DD-MM-YYYY';
             var set = vanillaSort(this.grepItems(key), key);
-            var typeShift = function(t){return Date.parse( hxDateFormat(  t, splitter , dateFormat )) }; //Function to adjust comparison for date objects
+            var typeShift = function(t){ return Date.parse( hxDateFormat(  t, splitter , dateFormat ) )  }; //Function to adjust comparison for date objects
             
             if (order == 'descending') {
-                var set = vanillaSort(this.grepItems(key), key, 1,typeShift);
+                var set = vanillaSort(this.grepItems(key), key, 1, typeShift);
             } else {
-                var set = vanillaSort(this.grepItems(key), key,0,typeShift);
+                var set = vanillaSort(this.grepItems(key), key, 0 ,typeShift);
             }
             
             this._orderChange(set, hideOthers);
@@ -556,7 +548,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             };
         }
     }
-
     function whichTransitionEvent() {
         var t;
         var el = document.createElement('fakeelement');
@@ -652,6 +643,20 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         return hex.length == 1 ? "0" + hex : hex;
     }
 
+    function vanillaAnimate(elem,style,start,end,time) {
+        var unit = 'px';
+        var start = parseInt(start);
+        var end = parseInt(end);
+        if( !elem) return;
+        var startT = new Date().getTime(),
+            timer = setInterval(function() {
+                var step = Math.min(1,( new Date().getTime()-startT)/time );
+                var loc =  ( start+step*(end-start) )+unit;
+                elem.style[style] = loc;
+                if( step == 1) clearInterval(timer);
+            },25);
+        elem.style[style] = start+unit;
+    }
     function vanillaSort( objArry, key, oSwitch ,typeShift ) {
         //oSwitch designates the collection order
         var typeShift = typeShift || function(t){return t};
@@ -731,7 +736,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         for (var i = 0, len = formatArr.length; i < len; i++) {
             out[formatOrder[formatArr[i]]] = strArr[i];
         }
-        return out.join(" ");
+        return out.join("/");
     }
 
     function msieversion() {
