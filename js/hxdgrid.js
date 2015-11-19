@@ -12,15 +12,15 @@ var jQuery = jQuery || (require && require('jquery'));
 var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoader;
 (function($) {
     var gridIdCounter = 0;
-    var HxdGrid = function(jQuery, $el, options) {
+    var HxdGrid = function( domElem, options) {
         try {
             var _this = this;
             _this.uid = gridIdCounter;
-            _this.$el = $el;
+            _this.domElem = domElem;
             _this.resizeLock = true;
             _this.items = [];
-            $el.addClass('hxdGridContainer');
-            $el.get(0).setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
+            domElem.classList.add('hxdGridContainer')
+            domElem.setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
 
             _this.setOptions(options);
             _this.create(jQuery, _this);
@@ -32,8 +32,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
     };
     /* Core item object and prototype */
     var HxdItem = function($elem, cellOptions) {
-        this.$elem = $elem;
-        this.domElem = $elem.get(0);
+        this.$elem = $($elem);
+        this.domElem = $elem;
         this.cssAnim = false;
         if (msieversion()) { //IE FIX disable CSS animations
             //HxdWarning('CSS animations not supported with IE.Fallback to javascript');
@@ -251,8 +251,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         /* Core Grid prototype */
     HxdGrid.prototype = {
         uid: 0,
-        $: null,
-        $el: null,
+        domElem: null,
         resize: true,
         selector: '.hxdItem',
         hiddenItems: [],
@@ -287,19 +286,19 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
          */
         create: function(jQuery, _this) {
             _this = _this;
-            _this.$ = jQuery;
             _this.reflowLevel = 0;
-            _this._boundaryWrap(_this.$el, _this);
-
-            _this.$el.find(_this.selector).each(function(i) {
-                if (HxdModuleLoader !== 0) { //If module loader is present use it to get the correct hxdItem object
-                    _this.items[i] = HxdModuleLoader.moduleSelect(_this, _this.cellOptions, $(this), HxdItem);
-                } else {
-                    _this.items[i] = new HxdItem($(this), _this.cellOptions); //Use default item
-                }
-                _this.items[i].uid = _this.uid + '@' + i;
-                _this.items[i]._passNodeAttributes( this.attributes ); //Used for sorting
-            });
+            _this._boundaryWrap( _this.domElem , _this);
+                 var domArray = ( vClassFind( _this.domElem , _this.selector ) );
+                 for(var i=0, len = domArray.length; i < len;i++ ){
+                    var one = domArray[i];
+                    if (HxdModuleLoader !== 0) { //If module loader is present use it to get the correct hxdItem object
+                        _this.items[i] = HxdModuleLoader.moduleSelect(_this, _this.cellOptions, $(one), HxdItem);
+                    } else {
+                        _this.items[i] = new HxdItem( one , _this.cellOptions); //Use default item
+                    }
+                 _this.items[i].uid = _this.uid + '@' + i;
+                 _this.items[i]._passNodeAttributes( one.attributes ); //Used for sorting
+            };
 
             if (_this.cellStyle == 0) {
                 var sK = _this.items.length > 1 ? 1 : 0;
@@ -321,19 +320,17 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             boundingH = (this.xyMap.rows * parseInt(this.cellStyle.height) + (parseInt(
                 this.cellStyle['margin-top']) || 0));
                
-             ( vanillaClassFind( this.$el.get(0), 'gridContent' ) ).setAttribute('style', 'position:relative;width:100%;height:' + boundingH + 'px');
+             ( vClassFindOne( this.domElem, 'gridContent' ) ).setAttribute('style', 'position:relative;width:100%;height:' + boundingH + 'px');
         },
-        _boundaryWrap: function($elem, _this) {
+        _boundaryWrap: function(domElem, _this) {
             _this = _this || this;
-            out = $elem.wrapInner("<div class='gridContent'></div>");
-
+            out = vWrap( domElem, "<div class='gridContent'>", "</div>" )
             var event = "binaryShift" + _this.uid;
-            // console.log( out.find('.gridContent') );
-            //console.log( vanillaClassFind(out.get(0), 'gridContent' ) );
-           
-            out.find('.gridContent').bind(event, function(e, data) {
+            //console.log( vClassFindOne(out.get(0), 'gridContent' ) );   out.find('.gridContent')
+            ( vClassFindOne(out, 'gridContent' ) ).addEventListener(event, function(e, data) {
+            //$( ( vClassFindOne(out, 'gridContent' ) ) ).bind(event, function(e, data) {
                 _this.orderSwap(data);
-            });
+            },false);
         },
         orderSwap: function(items) {
             var i1 = items[0].startPos,
@@ -490,11 +487,11 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
          *
          **/
         mapGrid: function() {
-            var cont = this.$el;
+            var cont = this.domElem;
             /* var h = cont.height(),
                 w = cont.width();*/
-            var h = cont.get(0).offsetHeight,
-                w = cont.get(0).offsetWidth;
+            var h = cont.offsetHeight,
+                w = cont.offsetWidth;
             if (this.emptyGrid && this.emptyGridLength > 0) {
                 var items = this.emptyGridLength
             } else {
@@ -550,8 +547,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         var hxdGrids = [];
         hxAttachWindowFunctions(hxdGrids);
         return this.each(function(i) {
-            var $el = $(this);
-            hxdGrids[i] = new HxdGrid($, $el, options);
+            hxdGrids[i] = new HxdGrid(this, options);
         })
     }
 
@@ -624,7 +620,21 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         var hex = c.toString(16);
         return hex.length == 1 ? "0" + hex : hex;
     }
-    function vanillaClassFind( doc ,classN ){
+    function vClassFind( el, className ){
+        var nodeList = el.querySelectorAll(className);
+        return nodeList;
+    }
+    function vClassFindOne( el, className ){
+       for (var i = 0, il = el.childNodes.length; i < il; i++) {
+            var classes = el.childNodes[i].className != undefined? el.childNodes[i].className.split(" ") : [];
+            for (var j = 0, jl = classes.length; j < jl; j++) {
+                if (classes[j] == className) notes = el.childNodes[i];
+            }
+        }
+        return notes;
+    }
+    /*
+    function vClassFindOne( doc ,classN ){
         //var doc = document.getElementById("test");
         var notes = null;
         for (var i = 0; i < doc.childNodes.length; i++) {
@@ -635,6 +645,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         }
         return notes;
     }
+    function getChildByClass(el, className) {
+        for (var i = 0, il = el.childNodes.length; i < il; i++) {
+            var classes = el.childNodes[i].className != undefined? el.childNodes[i].className.split(" ") : [];
+            for (var j = 0, jl = classes.length; j < jl; j++) {
+                if (classes[j] == className) notes = el.childNodes[i];
+            }
+        }
+        return notes;
+    }*/
     function vanillaAnimate(elem,style,start,end,time) {
         var unit = 'px';
         var start = parseInt(start);
@@ -766,6 +785,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         setTimeout(function() {
             elem.style.left = left;
         }, delay);
+    }
+    function vWrap(orgDom, open, close ){
+        org_html = orgDom.innerHTML;
+        new_html = open + org_html + close;
+        orgDom.innerHTML = new_html;
+        return orgDom;
     }
 
     function HxdException(message) {
