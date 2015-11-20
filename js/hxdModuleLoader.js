@@ -6,6 +6,7 @@
 	Project site: Coming Soon
 	Github site: 
 **/
+var jQuery = jQuery || (require && require('jquery'));
 var modules = {};
 modules[0] 	= typeof HxdClipModule  === 'undefined' 	? 0 : HxdClipModule;
 modules[1] 	= typeof HxdHexModule   === 'undefined' 	? 0 : HxdHexModule;
@@ -25,10 +26,10 @@ var HxdModuleLoader = (function() {
 			
 			Possible improvement. Convert constructor and Proto caches to objects. This will allow mixing prototypes and constructors
 	*/
-	var moduleSelectFunction = function( _this, cellOptions, $elem , HxdItem){
+	var moduleSelectFunction = function( _this, cellOptions, $elem, HxdItem){
 		for ( var i in modules ) {
 			if( modules[i] !== 0 ){
-				var cond = modules[i].HxdCondition( _this, cellOptions, $elem );// Evaluates the condition specified in the module file
+				var cond = modules[i].HxdCondition( _this, cellOptions, $($elem));// Evaluates the condition specified in the module file
 				if( cond ){
 					if( typeof constructorCache[i] ==='undefined' ){
 						var obj = modules[i].constOb;
@@ -43,11 +44,11 @@ var HxdModuleLoader = (function() {
 						constructorCache[i]  = obj;
 					}
 					
-					return new constructorCache[i]( $elem , cellOptions );
+					return new constructorCache[i]( $($elem), cellOptions );
 				}
 			}
 		}
-		return new HxdItem( $elem , cellOptions );
+		return new HxdItem( $($elem), cellOptions );
 	};
 	return {
 		moduleSelect : moduleSelectFunction

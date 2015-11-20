@@ -8,9 +8,9 @@
     Github site:
 **/
 
-var jQuery = jQuery || (require && require('jquery'));
+//var jQuery = jQuery || (require && require('jquery'));
 var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoader;
-(function($) {
+(function() {
     "use strict";
     var gridIdCounter = 0;
     var HxdGrid = function( domElem, options) {
@@ -28,7 +28,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             domElem.setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
 
             _this.setOptions(options);
-            _this.create(jQuery, _this);
+            _this.create(_this);
             hxResizeBind(_this);
             gridIdCounter++;
         } catch (e) {
@@ -36,9 +36,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         }
     };
     /* Core item object and prototype */
-    var HxdItem = function(jqElem, cellOptions) {
-        this.jqElem = $(jqElem);
-        this.domElem = jqElem;
+    var HxdItem = function(domElem, cellOptions) {
+        //this.jqElem = $(jqElem);
+        this.domElem = domElem;
         this.cssAnim = true;
         if (msieversion()) { //IE FIX disable CSS animations
             //HxdWarning('CSS animations not supported with IE. Auto fallback to javascript');
@@ -51,7 +51,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
     HxdItem.prototype = {
             /* Base prototype. All the properties and methods in this object are shared between other variations */
             uid: 0,
-            jqElem: null,
             domElem: null,
             startPos: null,
             bgColor: 0,
@@ -111,10 +110,13 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 hxItem1.moveTo(it[0], it[1]);
                 hxItem2.moveTo(me[0], me[1]);
                 var parentuid = (this.uid.split("@"))[0];
-                this.jqElem.parent().trigger('binaryShift' + parentuid, {
-                    0: hxItem1,
-                    1: hxItem2
-                });
+               
+                var target = (this.domElem.parentNode);
+                var event = 'binaryShift' + parentuid;
+                var data = { 0: hxItem1, 1: hxItem2 };
+                
+                vTrigger(target,event, data );
+                //$(target).trigger('binaryShift' + parentuid, data);
 
                 if (typeof _callback !== 'undefined') {
                     _callback();
@@ -127,8 +129,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             },
             moveTo: function(xCor, yCor, domElem) {
                 var domElem =  domElem || this.domElem;
-                //var xCor = xCor;
-               // var yCor = yCor;
                 if ((typeof domElem.getAttribute('style') !== 'undefined') && domElem.style.position == 'absolute') {
                     if (this.moveInViewport(xCor, yCor) || !this.viewFade) { //this.isElementInViewport()
                         this.animateOver(xCor, yCor);
@@ -211,15 +211,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     elem.style.opacity = "1";
                 }, delay);
             },
-            forceHidden: function() { //IMPROVE
-                this.jqElem.fadeOut("slow", "linear");
+            forceHidden: function() { //Replace JQUERY
+                //this.jqElem.fadeOut("slow", "linear");
             },
-            forceVisible: function() { //IMPROVE
-                this.jqElem.fadeIn("slow", "linear");
+            forceVisible: function() { //Replace JQUERY
+                //this.jqElem.fadeIn("slow", "linear");
             },
             toggleVisible: function(speed) {
-                var speed = speed || 'slow';
-                this.jqElem.fadeToggle("slow", "linear");
+                //var speed = speed || 'slow';Replace JQUERY
+                //this.jqElem.fadeToggle("slow", "linear");
             },
             isElementInViewport: function(xCor, yCor) {
                 var rect = this.domElem.getBoundingClientRect();
@@ -294,13 +294,13 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
          *    Prepares the container object and identifies the hxdItem objects,
          *    depending on the available optional modules and parameters
          */
-        create: function(jQuery, _this) {
+        create: function( _this) {
             _this.reflowLevel = 0;
             _this._boundaryWrap( _this.domElem , _this);
                  var domArray = ( vClassFind( _this.domElem , _this.selector ) );
                  for(var i=0, len = domArray.length; i < len;i++ ){
                     if (HxdModuleLoader !== 0) { //If module loader is present use it to get the correct hxdItem object
-                        _this.items[i] = HxdModuleLoader.moduleSelect(_this, _this.cellOptions, $(domArray[i]), HxdItem);
+                        _this.items[i] = HxdModuleLoader.moduleSelect(_this, _this.cellOptions, domArray[i], HxdItem ,domArray[i]);
                     } else {
                         _this.items[i] = new HxdItem( domArray[i] , _this.cellOptions); //Use default item
                     }
@@ -333,12 +333,17 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         _boundaryWrap: function(domElem, _this) {
             _this = _this || this;
             var out = vWrap( domElem, "<div class='gridContent'>", "</div>" )
-            var event = "binaryShift" + _this.uid;
+            //var event = "binaryShift" + _this.uid;
+            var event = document.createEvent("Event");
+            event.initEvent("dataavailable",true,true);
+
+            console.log(event);
             ( vClassFindOne(out, 'gridContent' ) ).addEventListener(event, function(e, data) {
                 _this.orderSwap(data);
             },false);
         },
         orderSwap: function(items) {
+                console.log('swap');
             var i1 = items[0].startPos,
                 i2 = items[1].startPos;
             this.itemOrder[i1] = i2;
@@ -548,13 +553,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         }
     }
     /* Function window bindings*/
-    jQuery.fn.hxdGrid = function(options) {
-        var hxdGrids = [];
-        hxAttachWindowFunctions(hxdGrids);
-        return this.each(function(i) {
-            hxdGrids[i] = new HxdGrid(this, options);
-        })
-    }
+    if ( typeof jQuery !== 'undefined' ){
+        jQuery.fn.hxdGrid = function(options) {
+            var hxdGrids = [];
+            hxAttachWindowFunctions(hxdGrids);
+            return this.each(function(i) {
+                hxdGrids[i] = new HxdGrid(this, options);
+            })
+        }
+    };
     window.hxdgrid = function(target, options){
         var hxdGrids = [];
         hxAttachWindowFunctions(hxdGrids);
@@ -752,7 +759,25 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             return false;
     }
     
+    function vTrigger(target, eventName,data){
+         var event; // The custom event that will be created
 
+          if ( document.createEvent ) {
+            event = document.createEvent("HTMLEvents");
+            event.initEvent("dataavailable", true, true,data);
+          } else {
+            event = document.createEventObject();
+            event.eventType = "dataavailable";
+          }
+
+          event.eventName = eventName;
+            console.log(event);
+          if (document.createEvent) {
+            target.dispatchEvent(event);
+          } else {
+            target.fireEvent("on" + event.eventType, event);
+          }
+    }
     function vGrep(items, callback) {
         var filtered = [],
             len = items.length,
@@ -813,4 +838,4 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         console.log("------WARNING------");
         console.log(text);
     }
-})(jQuery);
+})();

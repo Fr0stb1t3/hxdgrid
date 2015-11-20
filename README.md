@@ -13,13 +13,8 @@ HxdGrid is a front end script for ordering and sorting elements in a responsive 
 ### Browser compatibility
 The script works on Firefox, Chrome, Safari and IE9. While it may work on older IE versions it may need some tweaking.
 
-### Requirements
 
-HxdGrid uses some jQuery functions for now. These are in the process of being replaced and soon it will be standalone.
-
-* [jQuery] -At least 1.6.0 
-
-Additional modules have more dependencies. Currently the hexblock module has a svg clipping dependency on  [clip-path-polygon] 
+ 
 
 # Usage and Setup 
 #### Also available at http://fr0stb1t3.github.io/hxdgrid/
@@ -55,7 +50,9 @@ $(function() {
 	var options  = {
 		selector:  '.hxdItem'//default selector
 	};
-	$('.hxOuter').hxdGrid(options);
+	hxdgrid('.hxOuter',options);
+	// or with Jquery using $('.hxOuter').hxdGrid(options);
+	
 });
 ```
 
@@ -89,7 +86,31 @@ The script targets data tags that start with data-hxd and should ingore others.
 ```
 #### 2 Get the hxGrid object and bind the order event
 
-```javascript
+``` Plain javascript usage
+document.addEventListener("DOMContentLoaded", function() {
+		var options  = {
+			selector:  '.hxdItem'//default selector
+		};
+		hxdgrid( '#hxOuter' , options );
+		var demoGrid = getHxGridObj(0); // Get the correct grid container object
+	
+		var btn1 = document.querySelector("#letterSort");
+		btn1.addEventListener('click', function(event) {
+			demoGrid.orderByKey('letter' , true , 'ascending' );
+		});
+		
+		var btn2 = document.querySelector("#dateSort");
+		btn2.addEventListener('click', function(event) {
+			demoGrid.orderByDateKey('date' , false , 'ascending' );
+		});
+		
+		var btn3 = document.querySelector("#resetOrder");
+		btn3.addEventListener('click', function(event) {
+			demoGrid.resetOrder();
+		});
+	});
+
+```jQuery usage
 $(function() {
 	var options  = {
 		selector:  '.hxdItem'//default selector
@@ -112,6 +133,12 @@ $(function() {
 
 See a bug that needs fixing or an ugly bit of code that really needs a cleanup. Let me know at antoni.hxd@gmail.com
 
+### Additional extension requirements
+
+Since the earlier versions used jQuery it is still needed for some old extra settings (after including the loader file) If you just need the core script, these do not apply
+
+* [clip-path-polygon] for the hex clip/image clip module
+* [jQuery] -At least 1.6.0 
 
 ### Todos
 
