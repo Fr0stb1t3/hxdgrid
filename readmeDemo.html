@@ -26,7 +26,7 @@
 </style>
 </head>
 <body> 
-<div class="hxOuter">
+<div id="hxOuter">
     <div class="hxdItem">Unordered box</div>
     <div class="hxdItem">Unordered box</div>
     <div class="hxdItem">Unordered box</div>
@@ -56,7 +56,8 @@
 				
 				selector:  '.hxdItem'//default selector
 			};
-			$('.hxOuter').hxdGrid(options);
+			//$('#hxOuter').hxdGrid(options);
+			hxdgrid('#hxOuter',options);
 			var demoGrid = getHxGridObj(0); // Get the correct grid container object
 			//var demoGrid3 = getHxItemById("155@0"); // Get the correct grid container object
 			$('#dateSort').click(function(){

@@ -10,13 +10,16 @@ HxdGrid is a front end script for ordering and sorting elements in a responsive 
 ### Version
 0.2.5
 
+### Browser compatibility
+The script works on Firefox, Chrome, Safari and IE9. While it may work on older IE versions it may need some tweaking.
+
 ### Requirements
 
-HxdGrid has two dependencies:
+HxdGrid uses some jQuery functions for now. These are in the process of being replaced and soon it will be standalone.
 
-* [jQuery] -At least 1.6.0
-* [clip-path-polygon] - Only for the hexagon clip module
+* [jQuery] -At least 1.6.0 
 
+Additional modules have more dependencies. Currently the hexblock module has a svg clipping dependency on  [clip-path-polygon] 
 
 # Usage and Setup 
 #### Also available at http://fr0stb1t3.github.io/hxdgrid/
