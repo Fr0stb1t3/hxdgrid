@@ -337,13 +337,13 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             var event = document.createEvent("Event");
             event.initEvent("dataavailable",true,true);
 
-            console.log(event);
+            //console.log(event);
             ( vClassFindOne(out, 'gridContent' ) ).addEventListener(event, function(e, data) {
                 _this.orderSwap(data);
             },false);
         },
         orderSwap: function(items) {
-                console.log('swap');
+                //console.log('swap');
             var i1 = items[0].startPos,
                 i2 = items[1].startPos;
             this.itemOrder[i1] = i2;
