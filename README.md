@@ -46,13 +46,19 @@ You need to run the script from a server. To get a basic barebones version going
 ```
 #### 3. Finally we launch the script with a jquery function
 ```javascript
+//Either with plain javascript
+document.addEventListener("DOMContentLoaded", function() {
+		var options  = {
+			selector:  '.hxdItem'//default selector
+		};
+		hxdgrid( '.hxOuter' , options );
+});
+//Or with  jQuery
 $(function() {
 	var options  = {
 		selector:  '.hxdItem'//default selector
 	};
-	hxdgrid('.hxOuter',options);
-	// or with Jquery using $('.hxOuter').hxdGrid(options);
-	
+	$('.hxOuter').hxdGrid(options);
 });
 ```
 
@@ -86,7 +92,7 @@ The script targets data tags that start with data-hxd and should ingore others.
 ```
 #### 2 Get the hxGrid object and bind the order event
 
-``` Plain javascript usage
+```javascript
 document.addEventListener("DOMContentLoaded", function() {
 		var options  = {
 			selector:  '.hxdItem'//default selector
@@ -109,8 +115,7 @@ document.addEventListener("DOMContentLoaded", function() {
 			demoGrid.resetOrder();
 		});
 	});
-
-```jQuery usage
+//Or with jQuery
 $(function() {
 	var options  = {
 		selector:  '.hxdItem'//default selector
