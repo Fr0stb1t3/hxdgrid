@@ -1,5 +1,5 @@
 /**
-    HxdGrid 0.2.5
+    HxdGrid 0.3.0
     HxdGrid is a front end script for ordering and sorting elements in a responsive grid layout.
     Copyright (c) 2015 Antoni Atanasov
     License:  The current version project is licensed under GPLv3 at a later stage this may change to a dual license
@@ -7,43 +7,31 @@
     Project site: http://fr0stb1t3.github.io/hxdgrid/
     Github site: https://github.com/Fr0stb1t3
 **/
-
-//var jQuery = jQuery || (require && require('jquery'));
 (function() {
     "use strict";
     var gridIdCounter = 0;
-   
+
     /* Core item object and prototype */
-    var HxdItem = function(domElem, cellOptions,gridScale) {
+    var HxdItem = function(domElem, cellOptions, gridScale) {
         this.domElem = domElem;
         this.setOptions(cellOptions);
-        this.create(this,gridScale);
+        this.create(this, gridScale);
     };
     HxdItem.prototype = {
             /* Base prototype. All the properties and methods in this object are shared between other variations */
             uid: 0,
             domElem: null,
-            startPos: null,
-            bgColor: 0,
-            cssAnim: true,
             xCor: 0,
             yCor: 0,
-            baseWidth:80,
+            baseWidth: 80,
             gridPadding: 5,
-            relW:1,
-            relH:1,
-            viewFade:true,
+            relW: 1,
+            relH: 1,
+            viewFade: true,
             setOptions: function(options) {
                 this.viewFade = (options && options.viewFade) || this.viewFade;
-                this.autoBind = (options && options.autoBind)  || this.autoBind;
+                this.autoBind = (options && options.autoBind) || this.autoBind;
 
-                if (typeof options.bgColor !== 'undefined' && options.bgColor != 0){
-                    if (validHex(options.bgColor)) {
-                        this.bgColor = (options && options.bgColor);
-                    } else {
-                        new HxdWarning('HxdError -> Options.Invalid color (' + options.bgColor + ') provided. Input ignored. Please provide a valid hex string');
-                    }
-                }
             },
             addAttr: function(key, value) {
                 if (!this.hasOwnProperty(key)) {
@@ -56,24 +44,24 @@
                 for (var i = 0, len = nNodeMap.length; i < len; i++) {
                     var node = nNodeMap.item(i);
                     if ((node.name.indexOf("data-hxd-") > -1)) {
-                        this.addAttr(node.name.replace('data-hxd-', ''), node.value );
+                        this.addAttr(node.name.replace('data-hxd-', ''), node.value);
                     }
                 }
             },
-            create: function(_this,scale) {
-                _this.relW = Math.round(_this.domElem.offsetWidth/scale);
-                _this.relH = Math.round(_this.domElem.offsetHeight/scale);
-                
-                if(_this.relW > 1){
-                    var pad = (_this.gridPadding/80)* (_this.relW-1);//IMPROVE THIS get rid of hacked padding stuff
-                    _this.relW =(_this.relW) + pad;
-                    var nw = (_this.relW ) * scale+'px';
+            create: function(_this, scale) {
+                _this.relW = Math.round(_this.domElem.offsetWidth / scale);
+                _this.relH = Math.round(_this.domElem.offsetHeight / scale);
+
+                if (_this.relW > 1) {
+                    var pad = (_this.gridPadding / 80) * (_this.relW - 1); //IMPROVE THIS get rid of hacked padding stuff
+                    _this.relW = (_this.relW) + pad;
+                    var nw = (_this.relW) * scale + 'px';
                     _this.domElem.style.width = nw;
                 }
-                if(_this.relH > 1){
-                    var pad = (_this.gridPadding/80)* (_this.relH-1);//IMPROVE THIS get rid of hacked padding stuff
-                    _this.relH =(_this.relH) + pad;
-                    var nw = (_this.relH ) * scale+'px';
+                if (_this.relH > 1) {
+                    var pad = (_this.gridPadding / 80) * (_this.relH - 1); //IMPROVE THIS get rid of hacked padding stuff
+                    _this.relH = (_this.relH) + pad;
+                    var nw = (_this.relH) * scale + 'px';
                     _this.domElem.style.height = nw;
                 }
                 //vWrap(_this.domElem, "<div class='hxContent'>", "</div>" );
@@ -89,52 +77,55 @@
                 hxItem1.moveTo(it[0], it[1]);
                 hxItem2.moveTo(me[0], me[1]);
                 var parentuid = (this.uid.split("@"))[0];
-               
+
                 var target = (this.domElem.parentNode);
                 var event = 'binaryShift' + parentuid;
-                var data = { 0: hxItem1, 1: hxItem2 };
-                
-                vTrigger(target,event, data );
+                var data = {
+                    0: hxItem1,
+                    1: hxItem2
+                };
+
+                vTrigger(target, event, data);
 
                 if (typeof _callback !== 'undefined') {
                     _callback();
                 }
             },
             moveTo: function(xCor, yCor) {
-                var domElem =  this.domElem;
+                var domElem = this.domElem;
                 if ((typeof domElem.getAttribute('style') !== 'undefined') && domElem.style.position == 'absolute') {
-                        this.animateOver(xCor, yCor);
+                    this.animateOver(xCor, yCor);
                 } else {
                     var temp = domElem.getAttribute('style');
-                    domElem.setAttribute('style', temp+'opacity:1;margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
+                    domElem.setAttribute('style', temp + 'opacity:1;margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
                 }
                 this.xCor = xCor;
                 this.yCor = yCor;
             },
             animateOver: function(xCor, yCor, domElem) {
                 var domElem = domElem || this.domElem;
-                
+
                 domElem.style.WebkitTransition = "  all 0.7s ease ";
                 domElem.style.MozTransition = "  all 0.7s ease "; // ease-out// ease
                 domElem.style.transition = " all 1s ease  ";
                 var xPx = xCor + 'px';
                 var yPx = yCor + 'px';
                 if (domElem.style.top < yCor) {
-                    if (domElem.style.left != xPx){
+                    if (domElem.style.left != xPx) {
                         domElem.style.left = xPx;
                     }
-                    if (domElem.style.top != yPx){
-                        delayedY(domElem, yPx, 1000);
+                    if (domElem.style.top != yPx) {
+                        delayedSwitch(domElem, yPx, 'top', 1000);
                     }
                 } else {
-                    if (domElem.style.top != yPx){
+                    if (domElem.style.top != yPx) {
                         domElem.style.top = yPx;
                     }
-                    if (domElem.style.left != xPx){
-                        delayedX(domElem, xPx, 1000);
+                    if (domElem.style.left != xPx) {
+                        delayedSwitch(domElem, xPx, 'left', 1000);
                     }
                 }
-                
+
             },
             isElementInViewport: function(xCor, yCor) {
                 var rect = this.domElem.getBoundingClientRect();
@@ -144,7 +135,7 @@
                     rect.left >= (0 - visOffset) &&
                     rect.bottom <= ((window.innerHeight + visOffset) || (document.documentElement.clientHeight + visOffset)) &&
                     rect.right <= ((window.innerWidth + visOffset) || (document.documentElement.clientWidth + visOffset))
-                 );
+                );
             },
             moveInViewport: function(xCor, yCor) {
                 var rect = this.domElem.getBoundingClientRect();
@@ -156,19 +147,19 @@
                     (rect.left - lO) >= (0 - visOffset) &&
                     (rect.bottom - tO) <= ((window.innerHeight + visOffset) || (document.documentElement.clientHeight + visOffset)) &&
                     (rect.right - lO) <= ((window.innerWidth + visOffset) || (document.documentElement.clientWidth + visOffset))
-                  );
+                );
             }
         }
         /* Core Grid prototype */
-    var HxdGrid = function( domElem, options) {
+    var HxdGrid = function(domElem, options) {
         try {
             this.uid = gridIdCounter;
             this.domElem = domElem;
             this.resizeLock = true;
             this.items = [];
-            if( msieversion() ){
-                domElem.className +='hxdGridContainer';
-            }else{
+            if (msieversion()) {
+                domElem.className += 'hxdGridContainer';
+            } else {
                 domElem.classList.add('hxdGridContainer');
             }
             domElem.setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
@@ -180,13 +171,13 @@
             throw new HxdException('HxdGrid-> Grid initialization error. Detais: ' + e);
         }
     };
-    
+
     HxdGrid.prototype = {
         uid: 0,
         domElem: null,
         resize: true,
         gridCellSize: 80,
-        gridCellsWidth:0,
+        gridCellsWidth: 0,
         gridPadding: 5,
         selector: '.hxdItem',
         hiddenItems: [],
@@ -200,82 +191,92 @@
 
             /* Item options*/
             this.cellOptions.autoBind = (options && options.autoBind) || false;
-            this.cellOptions.bgColor = (options && options.bgColor) || 0;
             this.cellOptions.viewFade = (options && options.viewFade) || false;
         },
         create: function(_this) {
             _this.reflowLevel = 0;
-            _this._boundaryWrap( _this.domElem , _this);
-            var domArray = ( vClassFind( _this.domElem , _this.selector ) );
-            for(var i=0, len = domArray.length; i < len;i++ ){
-                domArray[i].innerHTML=i;
-                _this.items[i] = new HxdItem( domArray[i] , _this.cellOptions, _this.gridCellSize); 
+            _this._boundaryWrap(_this.domElem, _this);
+            var domArray = (vClassFind(_this.domElem, _this.selector));
+            for (var i = 0, len = domArray.length; i < len; i++) {
+                domArray[i].innerHTML = i;
+                _this.items[i] = new HxdItem(domArray[i], _this.cellOptions, _this.gridCellSize);
                 //_this.items[i].passNodeAttributes( domArray[i].attributes ); 
             };
             _this.positionItems();
         },
         _boundaryWrap: function(domElem, hxObj) {
             hxObj = hxObj || this;
-            
-            this.gridCellsWidth = Math.floor( domElem.offsetWidth / this.gridCellSize );
-            
-            var out = vWrap( domElem, "<div class='blockGrid' style='height: 100vh'>", "</div>" );
-            var event = document.createEvent("Event");
-            event.initEvent("dataavailable",true,true);
 
-            ( vClassFindOne(out, 'blockGrid' ) ).addEventListener(event, function(e, data) {
+            this.gridCellsWidth = Math.floor(domElem.offsetWidth / this.gridCellSize);
+
+            var out = vWrap(domElem, "<div class='blockGrid' style='height: 100vh'>", "</div>");
+            var event = document.createEvent("Event");
+            event.initEvent("dataavailable", true, true);
+
+            (vClassFindOne(out, 'blockGrid')).addEventListener(event, function(e, data) {
                 //hxObj.orderSwap(data);
-            },false);
+            }, false);
         },
-        resizeEvent: function(){
+        resizeEvent: function() {
             console.log('resize');
-            this.gridCellsWidth = Math.floor( this.domElem.offsetWidth / this.gridCellSize );
+            this.gridCellsWidth = Math.floor(this.domElem.offsetWidth / this.gridCellSize);
             this.positionItems();
-            
+
         },
-        positionItems: function(){
-            var xCor = 0, yCor=0;
-            var row = 0;
-            //var rowOffset = 0;
+        positionItems: function() {
+            var xCor = 0,
+                yCor = 0;
             var thisRow = new Object();
             var refRow;
-            var refRowMap;
-            var refPointer=0;
-                console.log('');
-                console.log('---------');
-            for(var i = 0,len = this.items.length;i<len; i++ ){
-                if(typeof refRow !=='undefined'){
-                    refPointer = xCor;//+refRow.offsetW;
-                    if(typeof refRow[refPointer] !=='undefined'){
-                        yCor = refRow[refPointer]['yCor']+ refRow[refPointer].relH*this.gridCellSize+this.gridPadding;
+            var refPointer = 0;
+            console.log('---------');
+            for (var i = 0, len = this.items.length; i < len; i++) {
+                if (typeof refRow !== 'undefined') {
+                    refPointer = xCor; //+refRow.offsetW;
+                    if (typeof refRow[refPointer] !== 'undefined') {
+                        if (0) { //Simple approach
+                            yCor = refRow[refPointer]['yCor'] + refRow[refPointer].relH * this.gridCellSize + this.gridPadding;
+                        } else if (refRow[refPointer].relH > 1) {
+
+                            thisRow[xCor] = {
+                                relW: refRow[refPointer]['relW'],
+                                relH: refRow[refPointer]['relH'] - 1,
+                                yCor: refRow[refPointer]['yCor'] + (this.gridCellSize + this.gridPadding),
+                                xCor: refRow[refPointer]['xCor'],
+                                i: 'PseudoBlock'
+                            }
+                            yCor = refRow[refPointer]['yCor'] + this.gridCellSize + this.gridPadding;
+
+                            if (refRow[refPointer].i !== 'PseudoBlock')
+                                xCor = this.gridPadding + (this.gridCellSize * refRow[refPointer].relW) + refRow[refPointer]['xCor'];
+
+                        } else {
+                            yCor = refRow[refPointer]['yCor'] + refRow[refPointer].relH * this.gridCellSize + this.gridPadding;
+                        }
+                    } else {
+                        yCor = this.items[i - 1].yCor;
                     }
-                    else{
-                        yCor = this.items[i-1].yCor;
-                    }
-                   
+
                 }
                 this.items[i].moveTo(xCor, yCor);
-                thisRow[xCor] = {relW:this.items[i].relW,relH:this.items[i].relH,yCor:this.items[i].yCor,i:i}
-                xCor = this.gridPadding + ( this.gridCellSize * this.items[i].relW ) + this.items[i].xCor;
-                
-                if( xCor > (this.gridCellsWidth * this.gridCellSize) ){
-                    xCor = 0;
-                    //yCor = this.gridPadding + (this.gridCellSize * this.items[i-row].relH ) + this.items[i-row].yCor;
-                    //rowOffset = this.gridCellsWidth - row; 
-                    row = 0;
-                    refRow = thisRow;
-                    refRowMap = Object.keys(thisRow);
-                    thisRow = new Object();
-                    //console.log(refRow);
-                }else{
-                    row++;
+                thisRow[xCor] = {
+                    relW: this.items[i].relW,
+                    relH: this.items[i].relH,
+                    yCor: this.items[i].yCor,
+                    xCor: this.items[i].xCor,
+                    i: i
                 }
-                
+                xCor = this.gridPadding + (this.gridCellSize * this.items[i].relW) + this.items[i].xCor;
+
+                if (xCor > (this.gridCellsWidth * this.gridCellSize)) {
+                    xCor = 0;
+                    refRow = thisRow;
+                    thisRow = new Object();
+                }
             }
         }
-        
-        
     }
+
     function whichTransitionEvent() {
         var t;
         var el = document.createElement('fakeelement');
@@ -293,7 +294,7 @@
         }
     }
     /* Function window bindings*/
-    if ( typeof jQuery !== 'undefined' ){
+    if (typeof jQuery !== 'undefined') {
         jQuery.fn.hxdGrid = function(options) {
             var hxdGrids = [];
             hxAttachWindowFunctions(hxdGrids);
@@ -302,39 +303,40 @@
             })
         }
     };
-    window.hxdgrid = function(target, options){
+    window.hxdgrid = function(target, options) {
         var hxdGrids = [];
         hxAttachWindowFunctions(hxdGrids);
         var nodeList = document.querySelectorAll(target);
-        for(var i=0, len = nodeList.length; i < len;i++ ){
+        for (var i = 0, len = nodeList.length; i < len; i++) {
             hxdGrids[i] = new HxdGrid(nodeList[i], options);
         }
-        if(len==1){
-             return hxdGrids[0];
+        if (len == 1) {
+            return hxdGrids[0];
         }
         return hxdGrids;
     }
+
     function hxAttachWindowFunctions(hxdGrids) {
-            window.getHxGridObj = function(id) {
-                return hxdGrids[id];
-            }
-            window.getHxItemById = function(id) {
-                try {
-                    var ids = id.split("@");
-                    var grid = hxdGrids[parseInt(ids[1])];
-                    var item = grid.items[parseInt(ids[0])];
-                    if (typeof item === 'undefined') {
-                        new HxdWarning('HxdGrid->Access error. Invalid item id. Itemuid: ' + ids[0] + ' RAW:' + id)
-                        return 0;
-                    }
-                    return hxdGrids[parseInt(ids[1])]
-                        .items[parseInt(ids[0])];
-                } catch (e) {
-                    throw new HxdException( 'HxdGrid->Access error. Invalid ID format. The correct format is ITEMuid@GRIDuid. Current input ' + id + '. Exception details ' + e );
+        window.getHxGridObj = function(id) {
+            return hxdGrids[id];
+        }
+        window.getHxItemById = function(id) {
+            try {
+                var ids = id.split("@");
+                var grid = hxdGrids[parseInt(ids[1])];
+                var item = grid.items[parseInt(ids[0])];
+                if (typeof item === 'undefined') {
+                    new HxdWarning('HxdGrid->Access error. Invalid item id. Itemuid: ' + ids[0] + ' RAW:' + id)
+                    return 0;
                 }
+                return hxdGrids[parseInt(ids[1])]
+                    .items[parseInt(ids[0])];
+            } catch (e) {
+                throw new HxdException('HxdGrid->Access error. Invalid ID format. The correct format is ITEMuid@GRIDuid. Current input ' + id + '. Exception details ' + e);
             }
         }
-  /* General purpose functions */
+    }
+    /* General purpose functions */
     function hxResizeBind(gridObj) {
         var rtime,
             timeout = false,
@@ -357,43 +359,26 @@
         });
     }
 
-    function validHex(inp) {
-        return /(^#[0-9A-F]{6}$)|(^#[0-9A-F]{3}$)/i.test(inp);
-    }
-
-    function rgbToHexString(string) {
-        if (string == 'transparent') {
-            return '';
-        };
-        var RGB = string.split("(")[1].split(")")[0].split(",");
-        return rgbToHex(RGB[0], RGB[1], RGB[2]);
-    }
-
-    function rgbToHex(r, g, b) {
-        return "#" + componentToHex(r) + componentToHex(g) + componentToHex(b);
-    }
-
-    function componentToHex(c) {
-        c = parseInt(c);
-        var hex = c.toString(16);
-        return hex.length == 1 ? "0" + hex : hex;
-    }
-    function vClassFind( el, className ){
+    function vClassFind(el, className) {
         return el.querySelectorAll(className);
     }
-    function vClassFindOne( el, className ){
-       var nodes;
-       for (var i = 0, il = el.childNodes.length; i < il; i++) {
-            var classes = el.childNodes[i].className != undefined? el.childNodes[i].className.split(" ") : [];
+
+    function vClassFindOne(el, className) {
+        var nodes;
+        for (var i = 0, il = el.childNodes.length; i < il; i++) {
+            var classes = el.childNodes[i].className != undefined ? el.childNodes[i].className.split(" ") : [];
             for (var j = 0, jl = classes.length; j < jl; j++) {
                 if (classes[j] == className) nodes = el.childNodes[i];
             }
         }
         return nodes;
     }
-    function vSort( objArry, key, oSwitch ,typeShift ) {
+
+    function vSort(objArry, key, oSwitch, typeShift) {
         //oSwitch designates the collection order
-        var typeShift = typeShift || function(t){return t};
+        var typeShift = typeShift || function(t) {
+            return t
+        };
         var oSwitch = oSwitch || 0;
         var collections = [];
         collections[0] = [];
@@ -404,11 +389,11 @@
         }
 
         var pivot = Math.floor(objArry.length / 2);
-        var pivotVal = typeShift( objArry[pivot][key] );
+        var pivotVal = typeShift(objArry[pivot][key]);
         var pivotItem = objArry.splice(pivot, 1)[0];
 
         for (var i = 0; i < objArry.length; i++) {
-            var point = typeShift( objArry[i][key] );
+            var point = typeShift(objArry[i][key]);
             if (point <= pivotVal) {
                 collections[0 + oSwitch].push(objArry[i]);
             } else if (point > pivotVal) {
@@ -416,32 +401,35 @@
             }
         }
 
-        return vSort(collections[0], key, oSwitch,typeShift).concat(pivotItem, vSort(collections[1], key, oSwitch,typeShift));
+        return vSort(collections[0], key, oSwitch, typeShift).concat(pivotItem, vSort(collections[1], key, oSwitch, typeShift));
     }
-    function vWrap(orgDom, open, close ){
-        var org_html = orgDom.innerHTML;
-        var new_html = open + org_html + close;
-        orgDom.innerHTML = new_html;
+
+    function vWrap(orgDom, openTag, closeTag) {
+        var orgHtml = orgDom.innerHTML;
+        var newHtml = openTag + orgHtml + closeTag;
+        orgDom.innerHTML = newHtml;
         return orgDom;
     }
-    function vTrigger(target, eventName,data){
-         var event; // The custom event that will be created
 
-          if ( document.createEvent ) {
+    function vTrigger(target, eventName, data) {
+        var event; // The custom event that will be created
+
+        if (document.createEvent) {
             event = document.createEvent("HTMLEvents");
-            event.initEvent("dataavailable", true, true,data);
-          } else {
+            event.initEvent("dataavailable", true, true, data);
+        } else {
             event = document.createEventObject();
             event.eventType = "dataavailable";
-          }
+        }
 
-          event.eventName = eventName;
-          if (document.createEvent) {
+        event.eventName = eventName;
+        if (document.createEvent) {
             target.dispatchEvent(event);
-          } else {
+        } else {
             target.fireEvent("on" + event.eventType, event);
-          }
+        }
     }
+
     function vGrep(items, callback) {
         var filtered = [],
             len = items.length,
@@ -455,6 +443,7 @@
         }
         return filtered;
     }
+
     function css(a) { //Improved Version. Gets the computed style for the properties which may affect the grid object
         //Current Input jquery object. Future change would be for the function will not use the dom object directly
         var propArr = ['width',
@@ -485,6 +474,7 @@
         }
         return outJSON;
     }
+
     function msieversion() {
         var ua = window.navigator.userAgent;
         var msie = ua.indexOf("MSIE ");
@@ -493,17 +483,11 @@
         else
             return false;
     }
-    function delayedY(elem, top, delay) {
-        var delay = typeof delay === 'undefined' ? 1000 : delay;
-        setTimeout(function() {
-            elem.style.top = top;
-        }, delay);
-    }
 
-    function delayedX(elem, left, delay) {
+    function delayedSwitch(elem, top, sTag, delay) {
         var delay = typeof delay === 'undefined' ? 1000 : delay;
         setTimeout(function() {
-            elem.style.left = left;
+            elem.style[sTag] = top;
         }, delay);
     }
 
