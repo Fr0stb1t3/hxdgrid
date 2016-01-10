@@ -4,8 +4,8 @@
     Copyright (c) 2015 Antoni Atanasov
     License:  The current version project is licensed under GPLv3 at a later stage this may change to a dual license
     For more information check the Readme
-    Project site: Coming Soon
-    Github site:
+    Project site: http://fr0stb1t3.github.io/hxdgrid/
+    Github site: https://github.com/Fr0stb1t3
 **/
 
 //var jQuery = jQuery || (require && require('jquery'));
@@ -13,38 +13,14 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
 (function() {
     "use strict";
     var gridIdCounter = 0;
-    var HxdGrid = function( domElem, options) {
-        try {
-            var _this = this;
-            _this.uid = gridIdCounter;
-            _this.domElem = domElem;
-            _this.resizeLock = true;
-            _this.items = [];
-            if( msieversion() ){
-                 domElem.className +='hxdGridContainer';// IE AGAIN...
-            }else{
-                domElem.classList.add('hxdGridContainer');
-            }
-            domElem.setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
-
-            _this.setOptions(options);
-            _this.create(_this);
-            hxResizeBind(_this);
-            gridIdCounter++;
-        } catch (e) {
-            throw new HxdException('HxdGrid-> Grid initialization error. Detais: ' + e);
-        }
-    };
+   
     /* Core item object and prototype */
     var HxdItem = function(domElem, cellOptions) {
-        //this.jqElem = $(jqElem);
         this.domElem = domElem;
-        this.cssAnim = true;
         if (msieversion()) { //IE FIX disable CSS animations
             //HxdWarning('CSS animations not supported with IE. Auto fallback to javascript');
             this.cssAnim = false;
         }
-        //this.harwareAccelaration = false; //Triggers the hardware acceleration css
         this.setOptions(cellOptions);
         this.create(this);
     };
@@ -54,13 +30,14 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             domElem: null,
             startPos: null,
             bgColor: 0,
+            cssAnim: true,
             harwareAccelaration: false,
             xCor: 0,
             yCor: 0,
+            viewFade:true,
             setOptions: function(options) {
-
                 this.viewFade = (options && options.viewFade) || this.viewFade;
-                this.autoBind = (options && options.autoBind) || this.autoBind;
+                this.autoBind = (options && options.autoBind)  || this.autoBind;
                 this.harwareAccelaration = (options && options.harwareAccelaration) || this.harwareAccelaration;
 
                 if (typeof options.bgColor !== 'undefined' && options.bgColor != 0){
@@ -92,12 +69,12 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     var styleCol = rgbToHexString( css( _this.domElem )['background-color'] );
                     if (validHex(styleCol)) {
                         _this.bgColor = styleCol;
-                        styleOver = _this.colStyleOverride(_this);
+                        if (typeof styleCol !== 'undefined' && styleCol !== 0){//function cleanup
+                            styleOver = 'style="background:' +styleCol+ '"' //_this.colStyleOverride(_this);
+                        }
                     }
                 }
-                var modeVar = '';
-                vWrap(_this.domElem, "<div class='hxContent " + modeVar + "' " + styleOver + ">", "</div>" );
-
+                vWrap(_this.domElem, "<div class='hxContent' " + styleOver + ">", "</div>" );
             },
             getXY: function() {
                 return [this.xCor, this.yCor];
@@ -116,17 +93,16 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 var data = { 0: hxItem1, 1: hxItem2 };
                 
                 vTrigger(target,event, data );
-                //$(target).trigger('binaryShift' + parentuid, data);
 
                 if (typeof _callback !== 'undefined') {
                     _callback();
                 }
             },
-            colStyleOverride: function(_this) {
+           /* colStyleOverride: function(_this) {//unnecessary refactoring
                 if (typeof _this.bgColor !== 'undefined' && _this.bgColor !== 0) {
                     return 'style="background:' + _this.bgColor + '"';
                 }
-            },
+            },*/
             moveTo: function(xCor, yCor, domElem) {
                 var domElem =  domElem || this.domElem;
                 if ((typeof domElem.getAttribute('style') !== 'undefined') && domElem.style.position == 'absolute') {
@@ -137,18 +113,15 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                             this.fadeOver(xCor, yCor, domElem);
                         } else {
                             this.fadeOver(xCor, yCor, domElem);
-                            /* TO DO
-                            jqElem.filter(':not(:animated)').fadeOut('normal', function() {
-                                jqElem.css({
-                                    left: xCor,
-                                    top: yCor
-                                });
-                                jqElem.fadeIn('fast');
+                            /* vFade(domElem,0.0, 700,function(){
+                                domElem.style.top = yCor;
+                                domElem.style.left = xCor;
+                                vFade(domElem,1.0, 700);
                             });*/
                         }
                     }
                 } else {
-                    domElem.setAttribute('style', 'margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
+                    domElem.setAttribute('style', 'opacity:1;margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
                 }
                 this.xCor = xCor;
                 this.yCor = yCor;
@@ -158,11 +131,14 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
 
                 if (!this.cssAnim) {
                     if (domElem.style.top < yCor) {
-                        vanillaAnimate(domElem,'left',domElem.style.left,xCor, 500);
-                        vanillaAnimate(domElem,'top',domElem.style.top,yCor, 500);
+                        vAnimate(domElem,'left',xCor, 700,function(){
+                                vAnimate(domElem,'top',yCor, 700);
+                            }
+                        );
                     } else {
-                        vanillaAnimate(domElem,'left',domElem.style.left,xCor, 500);
-                        vanillaAnimate(domElem,'top',domElem.style.top,yCor, 500);
+                        vAnimate(domElem,'top',yCor, 700, function(){
+                            vAnimate(domElem,'left',xCor, 700);
+                        });
                     }
                 } else {
                     if (this.harwareAccelaration) {
@@ -179,7 +155,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                         if (domElem.style.left != xPx){
                             domElem.style.left = xPx;
                         }
-
                         if (domElem.style.top != yPx){
                             delayedY(domElem, yPx, 1000);
                         }
@@ -256,6 +231,27 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             }
         }
         /* Core Grid prototype */
+    var HxdGrid = function( domElem, options) {
+        try {
+            this.uid = gridIdCounter;
+            this.domElem = domElem;
+            this.resizeLock = true;
+            this.items = [];
+            if( msieversion() ){
+                 domElem.className +='hxdGridContainer';// IE AGAIN...
+            }else{
+                domElem.classList.add('hxdGridContainer');
+            }
+            domElem.setAttribute("style", "list-style: none;width: 100%; height: 100%; overflow: hidden;  position: relative;");
+            this.setOptions(options);
+            this.create(this);
+            hxResizeBind(this);
+            gridIdCounter++;
+        } catch (e) {
+            throw new HxdException('HxdGrid-> Grid initialization error. Detais: ' + e);
+        }
+    };
+    
     HxdGrid.prototype = {
         uid: 0,
         domElem: null,
@@ -294,7 +290,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
          *    Prepares the container object and identifies the hxdItem objects,
          *    depending on the available optional modules and parameters
          */
-        create: function( _this) {
+        create: function(_this) {
             _this.reflowLevel = 0;
             _this._boundaryWrap( _this.domElem , _this);
                  var domArray = ( vClassFind( _this.domElem , _this.selector ) );
@@ -330,8 +326,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
 
              ( vClassFindOne( this.domElem, 'gridContent' ) ).setAttribute('style', 'position:relative;width:100%;height:' + boundingH + 'px');
         },
-        _boundaryWrap: function(domElem, _this) {
-            _this = _this || this;
+        _boundaryWrap: function(domElem, hxObj) {//To Do fix non Jquery version
+            hxObj = hxObj || this;
             var out = vWrap( domElem, "<div class='gridContent'>", "</div>" )
             //var event = "binaryShift" + _this.uid;
             var event = document.createEvent("Event");
@@ -339,7 +335,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
 
             console.log(event);
             ( vClassFindOne(out, 'gridContent' ) ).addEventListener(event, function(e, data) {
-                _this.orderSwap(data);
+                hxObj.orderSwap(data);
             },false);
         },
         orderSwap: function(items) {
@@ -440,7 +436,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 var set = vSort(this.grepItems(key), key, 0 ,typeShift);
             }
 
-            this._orderChange(set, hideOthers);
+            this.orderChange(set, hideOthers);
         },
         orderByKey: function(key, hideOthers, order) {
             var hideOthers = hideOthers || false;
@@ -451,9 +447,9 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             } else {
                 var set = vSort(this.grepItems(key), key);
             }
-            this._orderChange(set, hideOthers);
+            this.orderChange(set, hideOthers);
         },
-        _orderChange: function(set, hideOthers) {
+        orderChange: function(set, hideOthers) {
             var ordered = [];
             var hidden = [];
             for (var i = 0, len = set.length; i < len; i++) {
@@ -569,7 +565,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         for(var i=0, len = nodeList.length; i < len;i++ ){
             hxdGrids[i] = new HxdGrid(nodeList[i], options);
         }
-        return hxdGrids[i];
+        if(len==1){
+             return hxdGrids[0];
+        }
+        return hxdGrids;
     }
     function hxAttachWindowFunctions(hxdGrids) {
             window.getHxGridObj = function(id) {
@@ -591,8 +590,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 }
             }
         }
-    /* General purpose functions */
-    function hxResizeBind(_this) {
+  /* General purpose functions */
+    function hxResizeBind(gridObj) {
         var rtime,
             timeout = false,
             delta = 200;
@@ -602,10 +601,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 setTimeout(resizeEnd, delta);
             } else {
                 timeout = false;
-                if (_this.resizeLock) {
-                    _this.resizeLock = false;
-                    _this.reflowHexRows(function() {
-                        _this.resizeLock = true;
+                if (gridObj.resizeLock) {
+                    gridObj.resizeLock = false;
+                    gridObj.reflowHexRows(function() {
+                        gridObj.resizeLock = true;
                     });
                 }
             }
@@ -641,30 +640,53 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         return hex.length == 1 ? "0" + hex : hex;
     }
     function vClassFind( el, className ){
-        var nodeList = el.querySelectorAll(className);
-        return nodeList;
+        return el.querySelectorAll(className);
     }
     function vClassFindOne( el, className ){
-        var notes;
+       var nodes;
        for (var i = 0, il = el.childNodes.length; i < il; i++) {
             var classes = el.childNodes[i].className != undefined? el.childNodes[i].className.split(" ") : [];
             for (var j = 0, jl = classes.length; j < jl; j++) {
-                if (classes[j] == className) notes = el.childNodes[i];
+                if (classes[j] == className) nodes = el.childNodes[i];
             }
         }
-        return notes;
+        return nodes;
     }
-    function vanillaAnimate(elem,style,start,end,time) {
-        var unit = 'px';
-        var start = parseInt(start);
-        var end = parseInt(end);
+    function vFade(elem,end,time, _callback) {
+        var s = elem.style;
+        var start = 1 - end;
+        var startT = new Date().getTime();
+        var timer = setInterval(function() {
+                var step = Math.min(1,( new Date().getTime()-startT )/time );
+                var loc =  ( start+step*(end-start) );
+                elem.style.opacity = loc;
+                if( step == 1) {
+                    clearInterval(timer);
+                     if (typeof _callback !== 'undefined') {
+                        _callback();
+                    }
+                }
+            },25);
+    }
+    function vAnimate(elem,style,end,time , _callback) {
         if( !elem) return;
+        var start = elem.style[style];
+        if(start.indexOf("px") > -1){
+            var unit = 'px';
+        }
+        start = parseInt(start);
+        var end = parseInt(end);
         var startT = new Date().getTime(),
             timer = setInterval(function() {
-                var step = Math.min(1,( new Date().getTime()-startT)/time );
+                var step = Math.min(1,( new Date().getTime()-startT )/time );
                 var loc =  ( start+step*(end-start) )+unit;
                 elem.style[style] = loc;
-                if( step == 1) clearInterval(timer);
+                if( step == 1) {
+                    clearInterval(timer);
+                     if (typeof _callback !== 'undefined') {
+                        _callback();
+                    }
+                }
             },25);
         elem.style[style] = start+unit;
     }
@@ -695,7 +717,44 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
 
         return vSort(collections[0], key, oSwitch,typeShift).concat(pivotItem, vSort(collections[1], key, oSwitch,typeShift));
     }
+    function vWrap(orgDom, open, close ){
+        var org_html = orgDom.innerHTML;
+        var new_html = open + org_html + close;
+        orgDom.innerHTML = new_html;
+        return orgDom;
+    }
+    function vTrigger(target, eventName,data){
+         var event; // The custom event that will be created
 
+          if ( document.createEvent ) {
+            event = document.createEvent("HTMLEvents");
+            event.initEvent("dataavailable", true, true,data);
+          } else {
+            event = document.createEventObject();
+            event.eventType = "dataavailable";
+          }
+
+          event.eventName = eventName;
+            console.log(event);
+          if (document.createEvent) {
+            target.dispatchEvent(event);
+          } else {
+            target.fireEvent("on" + event.eventType, event);
+          }
+    }
+    function vGrep(items, callback) {
+        var filtered = [],
+            len = items.length,
+            i = 0;
+        for (; i < len; i++) {
+            var item = items[i];
+            var cond = callback(item);
+            if (cond) {
+                filtered.push(item);
+            }
+        }
+        return filtered;
+    }
     function css(a) { //Improved Version. Gets the computed style for the properties which may affect the grid object
         //Current Input jquery object. Future change would be for the function will not use the dom object directly
         var propArr = ['width',
@@ -758,40 +817,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         else
             return false;
     }
-    
-    function vTrigger(target, eventName,data){
-         var event; // The custom event that will be created
-
-          if ( document.createEvent ) {
-            event = document.createEvent("HTMLEvents");
-            event.initEvent("dataavailable", true, true,data);
-          } else {
-            event = document.createEventObject();
-            event.eventType = "dataavailable";
-          }
-
-          event.eventName = eventName;
-            console.log(event);
-          if (document.createEvent) {
-            target.dispatchEvent(event);
-          } else {
-            target.fireEvent("on" + event.eventType, event);
-          }
-    }
-    function vGrep(items, callback) {
-        var filtered = [],
-            len = items.length,
-            i = 0;
-        for (; i < len; i++) {
-            var item = items[i];
-            var cond = callback(item);
-            if (cond) {
-                filtered.push(item);
-            }
-        }
-        return filtered;
-    }
-
+  
     function delayedY(elem, top, delay) {
         var delay = typeof delay === 'undefined' ? 1000 : delay;
         setTimeout(function() {
@@ -804,12 +830,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         setTimeout(function() {
             elem.style.left = left;
         }, delay);
-    }
-    function vWrap(orgDom, open, close ){
-        var org_html = orgDom.innerHTML;
-        var new_html = open + org_html + close;
-        orgDom.innerHTML = new_html;
-        return orgDom;
     }
 
     function HxdException(message) {

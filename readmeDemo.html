@@ -6,23 +6,16 @@
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Hxdgrid</title>
 <link rel="stylesheet" href="css/demo.css">
-<!--<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.4/jquery.min.js"></script>
-<script src="dep/jquery-1.5.2.min.js" type="text/javascript"></script>-->
-
-<!--<link rel="stylesheet" href="css/hxdgrid-hex.css"> 
-<script src="js/hxdHexModule.js" type="text/javascript"></script>
-<script src="js/hxdModuleLoader.js" type="text/javascript"></script>-->
 <script src="js/hxdgrid.js" type="text/javascript"></script>
 <style>
 .hxdItem {
   width: 200px;
   overflow: hidden;
-  height: 250px;
+  height: 200px;
   background: #AAA;
   margin-left: 4px;
   margin-bottom: 4px;
 }
-
 </style>
 </head>
 <body> 
@@ -30,7 +23,7 @@
     <div class="hxdItem">Unordered box</div>
     <div class="hxdItem">Unordered box</div>
     <div class="hxdItem">Unordered box</div>
-    <div class="hxdItem">Unordered box</div>
+    <div class="hxdItem ">Unordered box</div>
     <div class="hxdItem" data-hxd-letter="c">Third Box  (letter sort) </div>
     <div class="hxdItem" data-hxd-letter="d">Fourth Box (letter sort) </div>
     <div class="hxdItem" data-hxd-letter="b">Second Box (letter sort) </div>
@@ -53,10 +46,11 @@
 	<script>
 			document.addEventListener("DOMContentLoaded", function() {
 				var options  = {
+					viewFade: false,
 					selector:  '.hxdItem'//default selector
 				};
-				hxdgrid( '#hxOuter' , options );
-				var demoGrid = getHxGridObj(0); // Get the correct grid container object
+				var demoGrid = hxdgrid( '#hxOuter' , options );//if the function has one target return a reference to 1 object, else return array of objects
+				//var demoGrid = getHxGridObj(0); // Get the correct grid container object
 			
 				var btn1 = document.querySelector("#letterSort");
 				btn1.addEventListener('click', function(event) {
