@@ -15,14 +15,10 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
     var gridIdCounter = 0;
    
     /* Core item object and prototype */
-    var HxdItem = function(domElem, cellOptions) {
+    var HxdItem = function(domElem, cellOptions,gridScale) {
         this.domElem = domElem;
-        if (msieversion()) { //IE FIX disable CSS animations
-            //HxdWarning('CSS animations not supported with IE. Auto fallback to javascript');
-            this.cssAnim = false;
-        }
         this.setOptions(cellOptions);
-        this.create(this);
+        this.create(this,gridScale);
     };
     HxdItem.prototype = {
             /* Base prototype. All the properties and methods in this object are shared between other variations */
@@ -31,14 +27,16 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             startPos: null,
             bgColor: 0,
             cssAnim: true,
-            harwareAccelaration: false,
             xCor: 0,
             yCor: 0,
+            baseWidth:80,
+            gridPadding: 5,
+            relW:1,
+            relH:1,
             viewFade:true,
             setOptions: function(options) {
                 this.viewFade = (options && options.viewFade) || this.viewFade;
                 this.autoBind = (options && options.autoBind)  || this.autoBind;
-                this.harwareAccelaration = (options && options.harwareAccelaration) || this.harwareAccelaration;
 
                 if (typeof options.bgColor !== 'undefined' && options.bgColor != 0){
                     if (validHex(options.bgColor)) {
@@ -63,18 +61,23 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     }
                 }
             },
-            create: function(_this) {
-                var styleOver = '';
-                if (typeof css(_this.domElem)['background-color'] !== 'undefined') {
-                    var styleCol = rgbToHexString( css( _this.domElem )['background-color'] );
-                    if (validHex(styleCol)) {
-                        _this.bgColor = styleCol;
-                        if (typeof styleCol !== 'undefined' && styleCol !== 0){//function cleanup
-                            styleOver = 'style="background:' +styleCol+ '"' //_this.colStyleOverride(_this);
-                        }
-                    }
+            create: function(_this,scale) {
+                _this.relW = Math.round(_this.domElem.offsetWidth/scale);
+                _this.relH = Math.round(_this.domElem.offsetHeight/scale);
+                
+                if(_this.relW > 1){
+                    var pad = (_this.gridPadding/80)* (_this.relW-1);//IMPROVE THIS get rid of hacked padding stuff
+                    _this.relW =(_this.relW) + pad;
+                    var nw = (_this.relW ) * scale+'px';
+                    _this.domElem.style.width = nw;
                 }
-                vWrap(_this.domElem, "<div class='hxContent' " + styleOver + ">", "</div>" );
+                if(_this.relH > 1){
+                    var pad = (_this.gridPadding/80)* (_this.relH-1);//IMPROVE THIS get rid of hacked padding stuff
+                    _this.relH =(_this.relH) + pad;
+                    var nw = (_this.relH ) * scale+'px';
+                    _this.domElem.style.height = nw;
+                }
+                //vWrap(_this.domElem, "<div class='hxContent'>", "</div>" );
             },
             getXY: function() {
                 return [this.xCor, this.yCor];
@@ -98,103 +101,41 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     _callback();
                 }
             },
-           /* colStyleOverride: function(_this) {//unnecessary refactoring
-                if (typeof _this.bgColor !== 'undefined' && _this.bgColor !== 0) {
-                    return 'style="background:' + _this.bgColor + '"';
-                }
-            },*/
-            moveTo: function(xCor, yCor, domElem) {
-                var domElem =  domElem || this.domElem;
+            moveTo: function(xCor, yCor) {
+                var domElem =  this.domElem;
                 if ((typeof domElem.getAttribute('style') !== 'undefined') && domElem.style.position == 'absolute') {
-                    if (this.moveInViewport(xCor, yCor) || !this.viewFade) { //this.isElementInViewport()
                         this.animateOver(xCor, yCor);
-                    } else {
-                        if (this.cssAnim) {
-                            this.fadeOver(xCor, yCor, domElem);
-                        } else {
-                            this.fadeOver(xCor, yCor, domElem);
-                            /* vFade(domElem,0.0, 700,function(){
-                                domElem.style.top = yCor;
-                                domElem.style.left = xCor;
-                                vFade(domElem,1.0, 700);
-                            });*/
-                        }
-                    }
                 } else {
-                    domElem.setAttribute('style', 'opacity:1;margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
+                    var temp = domElem.getAttribute('style');
+                    domElem.setAttribute('style', temp+'opacity:1;margin:0!important;float:none;position: absolute;left:' + xCor + 'px;top:' + yCor + 'px');
                 }
                 this.xCor = xCor;
                 this.yCor = yCor;
             },
             animateOver: function(xCor, yCor, domElem) {
                 var domElem = domElem || this.domElem;
-
-                if (!this.cssAnim) {
-                    if (domElem.style.top < yCor) {
-                        vAnimate(domElem,'left',xCor, 700,function(){
-                                vAnimate(domElem,'top',yCor, 700);
-                            }
-                        );
-                    } else {
-                        vAnimate(domElem,'top',yCor, 700, function(){
-                            vAnimate(domElem,'left',xCor, 700);
-                        });
+                
+                domElem.style.WebkitTransition = "  all 0.7s ease ";
+                domElem.style.MozTransition = "  all 0.7s ease "; // ease-out// ease
+                domElem.style.transition = " all 1s ease  ";
+                var xPx = xCor + 'px';
+                var yPx = yCor + 'px';
+                if (domElem.style.top < yCor) {
+                    if (domElem.style.left != xPx){
+                        domElem.style.left = xPx;
+                    }
+                    if (domElem.style.top != yPx){
+                        delayedY(domElem, yPx, 1000);
                     }
                 } else {
-                    if (this.harwareAccelaration) {
-                        domElem.style.WebkitTransform = "  translate3d(0, 0, 0)";
-                        domElem.style.MozTransform = "  translate3d(0, 0, 0) "; // ease-out// ease
-                        domElem.style.transform = " translate3d(0, 0, 0) ";
+                    if (domElem.style.top != yPx){
+                        domElem.style.top = yPx;
                     }
-                    domElem.style.WebkitTransition = "  all 0.7s ease ";
-                    domElem.style.MozTransition = "  all 0.7s ease "; // ease-out// ease
-                    domElem.style.transition = " all 1s ease  ";
-                    var xPx = xCor + 'px';
-                    var yPx = yCor + 'px';
-                    if (domElem.style.top < yCor) {
-                        if (domElem.style.left != xPx){
-                            domElem.style.left = xPx;
-                        }
-                        if (domElem.style.top != yPx){
-                            delayedY(domElem, yPx, 1000);
-                        }
-                    } else {
-                        if (domElem.style.top != yPx){
-                            domElem.style.top = yPx;
-                        }
-                        if (domElem.style.left != xPx){
-                            delayedX(domElem, xPx, 1000);
-                        }
+                    if (domElem.style.left != xPx){
+                        delayedX(domElem, xPx, 1000);
                     }
                 }
-            },
-            fadeOver: function(xCor, yCor, elem) {
-                var elem = elem || this.domElem; //
-                elem.style.WebkitTransition = "  opacity  0.7s ease ";
-                elem.style.MozTransition = "  opacity  0.7s ease ";
-                elem.style.transition = " opacity  1 linear 0s ";
-                elem.style.opacity = "0";
-                this.delayedOpacityShift(elem, 2, 1500, xCor, yCor);
-            },
-            delayedOpacityShift: function(elem, op, delay, xCor, yCor) {
-                var delay = typeof delay === 'undefined' ? 1000 : delay;
-                setTimeout(function() {
-                    var xPx = xCor + 'px';
-                    var yPx = yCor + 'px';
-                    elem.style.left = xPx;
-                    elem.style.top = yPx;
-                    elem.style.opacity = "1";
-                }, delay);
-            },
-            forceHidden: function() { //Replace JQUERY
-                //this.jqElem.fadeOut("slow", "linear");
-            },
-            forceVisible: function() { //Replace JQUERY
-                //this.jqElem.fadeIn("slow", "linear");
-            },
-            toggleVisible: function(speed) {
-                //var speed = speed || 'slow';Replace JQUERY
-                //this.jqElem.fadeToggle("slow", "linear");
+                
             },
             isElementInViewport: function(xCor, yCor) {
                 var rect = this.domElem.getBoundingClientRect();
@@ -217,17 +158,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                     (rect.bottom - tO) <= ((window.innerHeight + visOffset) || (document.documentElement.clientHeight + visOffset)) &&
                     (rect.right - lO) <= ((window.innerWidth + visOffset) || (document.documentElement.clientWidth + visOffset))
                   );
-            },
-            hxGetYOffset: function(cellStyle) {
-                var y1 = parseInt(cellStyle.height) * 1.015;
-                return [
-                    (function(i) {
-                        return y1 * i;
-                    }), (function(i) {
-                        return (y1 * i) + (parseInt(
-                            cellStyle['margin-top']) || 0);
-                    })
-                ];
             }
         }
         /* Core Grid prototype */
@@ -238,7 +168,7 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             this.resizeLock = true;
             this.items = [];
             if( msieversion() ){
-                 domElem.className +='hxdGridContainer';// IE AGAIN...
+                domElem.className +='hxdGridContainer';
             }else{
                 domElem.classList.add('hxdGridContainer');
             }
@@ -256,281 +186,96 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         uid: 0,
         domElem: null,
         resize: true,
+        gridCellSize: 80,
+        gridCellsWidth:0,
+        gridPadding: 5,
         selector: '.hxdItem',
         hiddenItems: [],
-        gridId: null,
-        accelarationH: false,
-        emptyGrid: false,
-        emptyGridLength: 0,
-        reflowLock: true,
-        cellStyle: 0,
         cellOptions: {},
         setOptions: function(options) {
 
             /*container options */
             this.autocenter = (options && options.autocenter !== false) || false;
-            this.clipping = (options && options.clipping) || this.clipping; // <-- At the moment only used in clip modules
             this.resize = (options && options.resize) || this.resize;
             this.selector = (options && options.selector) || this.selector;
-            this.hexMode = (options && options.hexMode) || this.hexMode;
-            this.reflowLock = (options && options.reflowLock) || this.reflowLock;
-            this.emptyGrid = (options && options.emptyGrid) || this.emptyGrid;
-            this.emptyGridLength = (options && options.emptyGridLength) || this.emptyGridLength;
-            this.harwareAccelaration = (options && options.harwareAccelaration) || this.harwareAccelaration;
 
             /* Item options*/
-            this.cellOptions.hxScale = (options && options.hxScale) || 'hxd-xl'; // <-- At the moment only used in some modules
             this.cellOptions.autoBind = (options && options.autoBind) || false;
             this.cellOptions.bgColor = (options && options.bgColor) || 0;
             this.cellOptions.viewFade = (options && options.viewFade) || false;
-            this.cellOptions.harwareAccelaration = this.harwareAccelaration;
         },
-        /**
-         *    create
-         *    Prepares the container object and identifies the hxdItem objects,
-         *    depending on the available optional modules and parameters
-         */
         create: function(_this) {
             _this.reflowLevel = 0;
             _this._boundaryWrap( _this.domElem , _this);
-                 var domArray = ( vClassFind( _this.domElem , _this.selector ) );
-                 for(var i=0, len = domArray.length; i < len;i++ ){
-                    if (HxdModuleLoader !== 0) { //If module loader is present use it to get the correct hxdItem object
-                        _this.items[i] = HxdModuleLoader.moduleSelect(_this, _this.cellOptions, domArray[i], HxdItem ,domArray[i]);
-                    } else {
-                        _this.items[i] = new HxdItem( domArray[i] , _this.cellOptions); //Use default item
-                    }
-                 _this.items[i].uid = _this.uid + '@' + i;
-                 _this.items[i].passNodeAttributes( domArray[i].attributes ); //Used for sorting
+            var domArray = ( vClassFind( _this.domElem , _this.selector ) );
+            for(var i=0, len = domArray.length; i < len;i++ ){
+                domArray[i].innerHTML=i;
+                _this.items[i] = new HxdItem( domArray[i] , _this.cellOptions, _this.gridCellSize); 
+                //_this.items[i].passNodeAttributes( domArray[i].attributes ); 
             };
-
-            if (_this.cellStyle == 0) {
-                var sK = _this.items.length > 1 ? 1 : 0;
-                if (sK == 0) {
-                    throw new HxdException('OPS one item in the grid. Are you sure you have it on the right dom element');
-                }
-                _this.cellStyle = css( _this.items[sK].domElem ); //Used in mapGrid
-
-                if ((typeof _this.cellStyle.height === 'undefined')) {
-                    _this.cellStyle.height = _this.cellStyle.width;
-                }
-            }
-            _this.xyMap = _this.mapGrid(),
-                _this._prepContainer();
-            _this.reflowHexRows();
-
+            _this.positionItems();
         },
-        _prepContainer: function() {
-            var boundingH = (this.xyMap.rows * parseInt(this.cellStyle.height) + (parseInt(
-                this.cellStyle['margin-top']) || 0));
-
-             ( vClassFindOne( this.domElem, 'gridContent' ) ).setAttribute('style', 'position:relative;width:100%;height:' + boundingH + 'px');
-        },
-        _boundaryWrap: function(domElem, hxObj) {//To Do fix non Jquery version
+        _boundaryWrap: function(domElem, hxObj) {
             hxObj = hxObj || this;
-            var out = vWrap( domElem, "<div class='gridContent'>", "</div>" )
-            //var event = "binaryShift" + _this.uid;
+            
+            this.gridCellsWidth = Math.floor( domElem.offsetWidth / this.gridCellSize );
+            
+            var out = vWrap( domElem, "<div class='blockGrid' style='height: 100vh'>", "</div>" );
             var event = document.createEvent("Event");
             event.initEvent("dataavailable",true,true);
 
-            console.log(event);
-            ( vClassFindOne(out, 'gridContent' ) ).addEventListener(event, function(e, data) {
-                hxObj.orderSwap(data);
+            ( vClassFindOne(out, 'blockGrid' ) ).addEventListener(event, function(e, data) {
+                //hxObj.orderSwap(data);
             },false);
         },
-        orderSwap: function(items) {
-                console.log('swap');
-            var i1 = items[0].startPos,
-                i2 = items[1].startPos;
-            this.itemOrder[i1] = i2;
-            this.itemOrder[i2] = i1;
+        resizeEvent: function(){
+            console.log('resize');
+            this.gridCellsWidth = Math.floor( this.domElem.offsetWidth / this.gridCellSize );
+            this.positionItems();
+            
         },
-        /**
-         *    reflowHexRows
-         *    The following function is fired at the beginning and after resize events;
-         *    It updates the map object returned from mapGrid() and checks if the items need to be moved
-         *     When there is a change in the amount of rows it calls reflowCells passing the current order of elements
-         */
-        reflowHexRows: function(_callback) {
-            if ( this.reflowLock ) {
-                this.reflowLock = false; //First check
-                this.xyMap = this.mapGrid();
-                if (this.reflowLevel != this.xyMap.rows) { //Second check
-                    this._prepContainer();
-                    this.reflowLevel = this.xyMap.rows;
-                    this.reflowCells(this.itemOrder);
-                }
-                this.reflowLock = true;
-
-                if (typeof _callback !== 'undefined') {
-                    _callback();
-                }
-            }
-        },
-        /**
-         *     reflowCells
-         *     This is responsible for the shifting coordinates and animation of the moving components
-         *    On the first iteration this function also stores the index position of the elements and starting order
-         *
-         *    The cells are positioned based on the output of mapGrid()
-         *
-         */
-        reflowCells: function(itemOrder) {
-            var _this = this;
-
-            if ((typeof _this.itemOrder === 'undefined')) {
-                _this.itemOrder = [];
-            }
-            for (var i = 0, len = _this.items.length; i < len; i++) {
-                var k = ((typeof itemOrder === 'undefined') || (typeof itemOrder[i] === 'undefined')) ? i : itemOrder[i]; //  itemOrder[i]) || i;
-
-                if (typeof _this.xyMap.cols !== 'undefined' || _this.xyMap.cols !== 0) {
-                    if (0 < _this.hiddenItems.indexOf(k)) {
-                        _this.items[k].toggleVisible();
-                    } else {
-                        _this.items[k].forceVisible();
+        positionItems: function(){
+            var xCor = 0, yCor=0;
+            var row = 0;
+            //var rowOffset = 0;
+            var thisRow = new Object();
+            var refRow;
+            var refRowMap;
+            var refPointer=0;
+                console.log('');
+                console.log('---------');
+            for(var i = 0,len = this.items.length;i<len; i++ ){
+                if(typeof refRow !=='undefined'){
+                    refPointer = xCor;//+refRow.offsetW;
+                    if(typeof refRow[refPointer] !=='undefined'){
+                        yCor = refRow[refPointer]['yCor']+ refRow[refPointer].relH*this.gridCellSize+this.gridPadding;
                     }
-                    if (_this.emptyGrid == true) { //used for bigger grids with less elements and custom coordinates
-                        var row = _this.items[k].setrow,
-                            tCol = _this.items[k].setcol % _this.xyMap.cols; //( (i) % _this.xyMap.cols ),
-                    } else {
-                        var row = Math.ceil((i + 1) / _this.xyMap.cols),
-                            tCol = ((i) % _this.xyMap.cols);
+                    else{
+                        yCor = this.items[i-1].yCor;
                     }
-                    var xCor = (tCol) * _this.xyMap.xO + _this.xyMap.xIndent;
-                    if (!isNaN(tCol))
-                        var yCor = _this.xyMap.yO[tCol % 2](row - 1); // <-- calls a function
-
-                    if ((typeof tCol === 'undefined') || (typeof yCor === 'undefined')) {
-                        _this.items[k].forceHidden();
-                    }
-
-                    _this.items[k].moveTo(xCor, yCor);
+                   
                 }
-                _this.items[k].startPos = k;
-                _this.itemOrder[i] = k;
-            }
-
-        },
-        grepItems: function(key, val) {
-            var cond = function(hxI) {
-                if (typeof val !== 'undefined') {
-                    return hxI[key] === val;
-                } else {
-                    return hxI[key];
+                this.items[i].moveTo(xCor, yCor);
+                thisRow[xCor] = {relW:this.items[i].relW,relH:this.items[i].relH,yCor:this.items[i].yCor,i:i}
+                xCor = this.gridPadding + ( this.gridCellSize * this.items[i].relW ) + this.items[i].xCor;
+                
+                if( xCor > (this.gridCellsWidth * this.gridCellSize) ){
+                    xCor = 0;
+                    //yCor = this.gridPadding + (this.gridCellSize * this.items[i-row].relH ) + this.items[i-row].yCor;
+                    //rowOffset = this.gridCellsWidth - row; 
+                    row = 0;
+                    refRow = thisRow;
+                    refRowMap = Object.keys(thisRow);
+                    thisRow = new Object();
+                    //console.log(refRow);
+                }else{
+                    row++;
                 }
-            };
-            return vGrep(this.items, cond);
-        },
-        orderByDateKey: function(key, hideOthers, order, splitter, dateFormat) {
-            var hideOthers = hideOthers || false,
-                order = order || 'ascending',
-                splitter = splitter || '.',
-                dateFormat = dateFormat || 'DD-MM-YYYY',
-                set = vSort(this.grepItems(key), key);
-            var typeShift = function(t){ return Date.parse( hxDateFormat(  t, splitter , dateFormat ) )  }; //Function to adjust comparison for date objects
-
-            if (order == 'descending') {
-                var set = vSort(this.grepItems(key), key, 1, typeShift);
-            } else {
-                var set = vSort(this.grepItems(key), key, 0 ,typeShift);
+                
             }
-
-            this.orderChange(set, hideOthers);
-        },
-        orderByKey: function(key, hideOthers, order) {
-            var hideOthers = hideOthers || false;
-            var order = order || 'ascending';
-
-            if (order == 'descending') {
-                var set = vSort(this.grepItems(key), key, 1);
-            } else {
-                var set = vSort(this.grepItems(key), key);
-            }
-            this.orderChange(set, hideOthers);
-        },
-        orderChange: function(set, hideOthers) {
-            var ordered = [];
-            var hidden = [];
-            for (var i = 0, len = set.length; i < len; i++) {
-                ordered[i] = set[i].startPos;
-            }
-            for (var i = 0, len = this.itemOrder.length; i < len; i++) {
-                if (ordered.indexOf(i) != -1) {} else {
-                    ordered.push(i);
-                    if (hideOthers) {
-                        hidden.push(i);
-                    }
-                }
-            }
-            if (hideOthers)
-                this.hiddenItems = hidden;
-            this.itemOrder = ordered;
-            this.reflowCells(this.itemOrder);
-        },
-        randomShuffle: function() {
-            var io = this.itemOrder;
-            for (var i = io.length - 1; i > 0; i--) {
-                var j = Math.floor(Math.random() * (i + 1));
-                var temp = io[i];
-                io[i] = io[j];
-                io[j] = temp;
-            }
-            this.reflowCells(io);
-        },
-        resetOrder: function() {
-            for (var i = 0, len = this.itemOrder.length; i < len; i++) {
-                this.itemOrder[i] = i;
-            }
-            this.hiddenItems = [];
-            this.reflowCells(this.itemOrder);
-        },
-        /**
-         *    Core mapping function
-         *    Based on the dimensions of the hxd items and the container,
-         *    this function returns the variables needed for placing the items in their appropriate position.
-         *    Output is an object containing the total columns, rows and coordinate offsets;
-         *    Additional output includes xIndent which is used to center the blocks based on remaining space if the cells do not fit
-         *
-         **/
-        mapGrid: function() {
-            var cont = this.domElem;
-            var h = cont.offsetHeight,
-                w = cont.offsetWidth;
-            if (this.emptyGrid && this.emptyGridLength > 0) {
-                var items = this.emptyGridLength
-            } else {
-                var items = this.items.length //(cont.find(this.selector)).length;
-            }
-            var mrgL = parseInt( this.cellStyle['margin-left'] || 0),
-                mrgR = parseInt( this.cellStyle['margin-right'] || 0);
-
-            var xOffset = parseInt(this.cellStyle.width) + (mrgL); //+ ( mrgR );
-            var cols = Math.floor(w / xOffset);
-
-            if (this.autocenter) {
-                var xInd = (w - ((cols) * xOffset)) / 2;
-
-                if (xInd > Math.abs(mrgL) * 2)
-                    xInd -= (mrgL);
-                else {
-                    xInd += (mrgL / 2);
-                }
-                if (items < cols) { // Fix for 1 row grids
-                    xInd = xInd + (xOffset * ((cols - items) / 2));
-                }
-            } else {
-                var xInd = 0;
-            }
-
-            return {
-                cols: cols,
-                rows: Math.ceil(items / cols),
-                xO: xOffset,
-                yO: this.items[this.items.length > 1 ? 1 : 0].hxGetYOffset(this.cellStyle),
-                xIndent: xInd //get the the remainder value to center the other blocks
-            };
         }
+        
+        
     }
     function whichTransitionEvent() {
         var t;
@@ -601,13 +346,8 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
                 setTimeout(resizeEnd, delta);
             } else {
                 timeout = false;
-                if (gridObj.resizeLock) {
-                    gridObj.resizeLock = false;
-                    gridObj.reflowHexRows(function() {
-                        gridObj.resizeLock = true;
-                    });
-                }
             }
+            gridObj.resizeEvent();
         }
         window.addEventListener('resize', function(event) {
             rtime = new Date();
@@ -651,44 +391,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
             }
         }
         return nodes;
-    }
-    function vFade(elem,end,time, _callback) {
-        var s = elem.style;
-        var start = 1 - end;
-        var startT = new Date().getTime();
-        var timer = setInterval(function() {
-                var step = Math.min(1,( new Date().getTime()-startT )/time );
-                var loc =  ( start+step*(end-start) );
-                elem.style.opacity = loc;
-                if( step == 1) {
-                    clearInterval(timer);
-                     if (typeof _callback !== 'undefined') {
-                        _callback();
-                    }
-                }
-            },25);
-    }
-    function vAnimate(elem,style,end,time , _callback) {
-        if( !elem) return;
-        var start = elem.style[style];
-        if(start.indexOf("px") > -1){
-            var unit = 'px';
-        }
-        start = parseInt(start);
-        var end = parseInt(end);
-        var startT = new Date().getTime(),
-            timer = setInterval(function() {
-                var step = Math.min(1,( new Date().getTime()-startT )/time );
-                var loc =  ( start+step*(end-start) )+unit;
-                elem.style[style] = loc;
-                if( step == 1) {
-                    clearInterval(timer);
-                     if (typeof _callback !== 'undefined') {
-                        _callback();
-                    }
-                }
-            },25);
-        elem.style[style] = start+unit;
     }
     function vSort( objArry, key, oSwitch ,typeShift ) {
         //oSwitch designates the collection order
@@ -735,7 +437,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
           }
 
           event.eventName = eventName;
-            console.log(event);
           if (document.createEvent) {
             target.dispatchEvent(event);
           } else {
@@ -785,30 +486,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         }
         return outJSON;
     }
-
-    function getStyleProperty(el, prop) {
-        if (getComputedStyle !== 'undefined') {
-            return getComputedStyle(el, null).getPropertyValue(prop); //;
-        } else {
-            return el.currentStyle[prop];
-        }
-    }
-
-    function hxDateFormat(str, separator, format) {
-        var formatOrder = {
-            'MM': 0,
-            'YYYY': 2,
-            'DD': 1
-        };
-        var out = [];
-        var strArr = str.split(separator);
-        var formatArr = format.split('-');
-        for (var i = 0, len = formatArr.length; i < len; i++) {
-            out[formatOrder[formatArr[i]]] = strArr[i];
-        }
-        return out.join("/");
-    }
-
     function msieversion() {
         var ua = window.navigator.userAgent;
         var msie = ua.indexOf("MSIE ");
@@ -817,7 +494,6 @@ var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoad
         else
             return false;
     }
-  
     function delayedY(elem, top, delay) {
         var delay = typeof delay === 'undefined' ? 1000 : delay;
         setTimeout(function() {
