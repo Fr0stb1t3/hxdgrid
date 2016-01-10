@@ -9,7 +9,6 @@
 **/
 
 //var jQuery = jQuery || (require && require('jquery'));
-var HxdModuleLoader = typeof HxdModuleLoader === 'undefined' ? 0 : HxdModuleLoader;
 (function() {
     "use strict";
     var gridIdCounter = 0;
