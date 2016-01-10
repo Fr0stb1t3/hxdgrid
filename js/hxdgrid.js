@@ -240,14 +240,14 @@
 
                             thisRow[xCor] = {
                                 relW: refRow[refPointer]['relW'],
-                                relH: refRow[refPointer]['relH'] - 1,
+                                relH: Math.floor( refRow[refPointer]['relH'] ) - 1,
                                 yCor: refRow[refPointer]['yCor'] + (this.gridCellSize + this.gridPadding),
                                 xCor: refRow[refPointer]['xCor'],
                                 i: 'PseudoBlock'
                             }
                             yCor = refRow[refPointer]['yCor'] + this.gridCellSize + this.gridPadding;
 
-                            if (refRow[refPointer].i !== 'PseudoBlock')
+                            if (refRow[refPointer].i !== 'PseudoBlock' || refRow[refPointer]['yCor'] >= 2)
                                 xCor = this.gridPadding + (this.gridCellSize * refRow[refPointer].relW) + refRow[refPointer]['xCor'];
 
                         } else {
