@@ -18,7 +18,6 @@
         this.create(this, gridScale);
     };
     HxdItem.prototype = {
-            /* Base prototype. All the properties and methods in this object are shared between other variations */
             uid: 0,
             domElem: null,
             xCor: 0,
@@ -224,64 +223,102 @@
             var xCor = 0,
                 yCor = 0;
             var thisRow = {};
-            var refRow;
+            var itemCopy = this.items;
+            var referenceRow;
             var refPointer = 0;
             console.log('---------');
             for (var i = 0, len = this.items.length; i < len; i++) {
-                if (typeof refRow !== 'undefined') {
-                    refPointer = xCor;
-                    if (typeof refRow[refPointer] !== 'undefined') {
-                        if (refRow[refPointer].relH > 1) {
-                            thisRow[xCor] = {
-                                relW: refRow[refPointer]['relW'],
-                                relH: Math.floor( refRow[refPointer]['relH'] ) - 1,
-                                yCor: refRow[refPointer]['yCor'] + (this.gridCellSize + this.gridPadding),
-                                xCor: refRow[refPointer]['xCor'],
-                                i: 'PseudoBlock'
-                            }
-                            
-                            yCor = refRow[refPointer]['yCor'] + this.gridCellSize + this.gridPadding;
-
-                            if (refRow[refPointer].i !== 'PseudoBlock' || refRow[refPointer]['yCor'] >= 2){
-                                xCor = this.gridPadding + (this.gridCellSize * refRow[refPointer].relW) + refRow[refPointer]['xCor'];
-                                xCor = getNextBestFit(refRow,xCor,this.gridCellSize,this.gridPadding);
-                            }
-
-                        } else {
-                            yCor = refRow[refPointer]['yCor'] + refRow[refPointer].relH * this.gridCellSize + this.gridPadding;
-                        }
-                    } else {
-                        yCor = this.items[i - 1].yCor;
-                    }
-
+                // Still needs cleanup and probably an algorithm rewrite and simplification
+                if(i>0){
+                    xCor = this.gridPadding + (this.gridCellSize * this.items[i-1].relW) + this.items[i-1].xCor;
+                }
+                if (xCor > (this.gridCellsWidth * this.gridCellSize)) {
+                    xCor = 0;
+                    referenceRow = thisRow;
+                    thisRow = {};
+                }
+                
+                if (typeof referenceRow !== 'undefined') {
+                    var xy  = xyCalibration(referenceRow,xCor,this,thisRow,i);
+                    xCor = xy[0];
+                    yCor = xy[1];
+                    if ( checkNext(referenceRow,xCor,this,thisRow,i)){ console.log('swap '+i +' with'+(i+1));}
                 }
                 this.items[i].moveTo(xCor, yCor);
-                thisRow[xCor] = {
+               
+                thisRow[xCor] = {//Used as a reference point for the next element row
                     relW: this.items[i].relW,
                     relH: this.items[i].relH,
                     yCor: this.items[i].yCor,
                     xCor: this.items[i].xCor,
                     i: i
                 }
-                xCor = this.gridPadding + (this.gridCellSize * this.items[i].relW) + this.items[i].xCor;
-                
-                if (xCor > (this.gridCellsWidth * this.gridCellSize)) {
-                    xCor = 0;
-                    refRow = thisRow;
-                    thisRow = {};
+            }
+            this.items = itemCopy;//restore original order
+        }
+    }
+    function checkNext(referenceRow, refPointer, gridObject,thisRow,index){
+        var item = gridObject.items[index];
+        if (typeof referenceRow[refPointer] !== 'undefined') {
+            if(item.relW > 1){   
+                for (var i = 1; i < item.relW;i++){
+                    var refPoint2 = referenceRow[refPointer].xCor + i*(gridObject.gridCellSize + gridObject.gridPadding);
+                    if(typeof referenceRow[refPoint2] !=='undefined' && referenceRow[refPoint2].relH >= 2){
+                         gridObject.items[index] = gridObject.items[index+1];
+                         gridObject.items[index+1] = item;
+                         thisRow[refPoint2] = {
+                            relW: referenceRow[refPoint2]['relW'],
+                            relH: Math.floor( referenceRow[refPoint2]['relH'] ) - 1,
+                            yCor: referenceRow[refPoint2]['yCor'] + (gridObject.gridCellSize + gridObject.gridPadding),
+                            xCor: referenceRow[refPoint2]['xCor'],
+                            i: 'pseudoB'
+                        }
+                         return true;
+                    }
                 }
             }
         }
     }
-    function getNextBestFit(refRow,newPointer,scale, pad){
-        var candidateBlock = refRow[newPointer];
+    function xyCalibration(referenceRow, refPointer, gridObject, thisRow, index){
+        /* NEEDS IMPROVEMENT */
+        var xCor=refPointer,
+            yCor = 0;
+        if (typeof referenceRow[refPointer] !== 'undefined') {
+            if (referenceRow[refPointer].relH > 1) {
+                thisRow[xCor] = {
+                    relW: referenceRow[refPointer]['relW'],
+                    relH: Math.floor( referenceRow[refPointer]['relH'] ) - 1,
+                    yCor: referenceRow[refPointer]['yCor'] + (gridObject.gridCellSize + gridObject.gridPadding),
+                    xCor: referenceRow[refPointer]['xCor'],
+                    i: 'pseudoB'
+                }
+                
+                yCor = referenceRow[refPointer]['yCor'] + gridObject.gridCellSize + gridObject.gridPadding;
+
+                if (referenceRow[refPointer].i !== 'pseudoB' || referenceRow[refPointer]['relH'] >= 2){
+                    xCor = gridObject.gridPadding + (gridObject.gridCellSize * referenceRow[refPointer].relW) + referenceRow[refPointer]['xCor'];
+                    xCor = getNextBestFit(referenceRow,xCor,gridObject.gridCellSize,gridObject.gridPadding);
+                }else{
+                    console.log(referenceRow[refPointer]);
+                }
+
+            } else {
+                yCor = referenceRow[refPointer]['yCor'] + referenceRow[refPointer].relH * gridObject.gridCellSize + gridObject.gridPadding;
+            }
+        } else {
+            yCor = gridObject.items[index - 1].yCor;
+        }
+        return [xCor,yCor];
+    }
+    function getNextBestFit(referenceRow,newPointer,scale, pad){
+        var candidateBlock = referenceRow[newPointer];
         if(typeof candidateBlock === 'undefined'){
             return newPointer;
         }
         if(candidateBlock.relH >= 2){
             var newX = candidateBlock.xCor + (candidateBlock.relW * scale) + pad ;
-            while(typeof refRow[newX] !== 'undefined' && refRow[newX].relH > 2){
-                candidateBlock = refRow[newX];
+            while(typeof referenceRow[newX] !== 'undefined' && referenceRow[newX].relH > 2){
+                candidateBlock = referenceRow[newX];
                 newX = candidateBlock.xCor + (candidateBlock.relW * scale) + pad ;
             }
             return newX;
