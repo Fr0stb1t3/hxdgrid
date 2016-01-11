@@ -23,7 +23,6 @@
             domElem: null,
             xCor: 0,
             yCor: 0,
-            baseWidth: 80,
             gridPadding: 5,
             relW: 1,
             relH: 1,
@@ -53,16 +52,14 @@
                 _this.relH = Math.round(_this.domElem.offsetHeight / scale);
 
                 if (_this.relW > 1) {
-                    var pad = (_this.gridPadding / 80) * (_this.relW - 1); //IMPROVE THIS get rid of hacked padding stuff
+                    var pad = (_this.gridPadding / scale) * (_this.relW - 1); //IMPROVE THIS get rid of hacked padding stuff
                     _this.relW = (_this.relW) + pad;
-                    var nw = (_this.relW) * scale + 'px';
-                    _this.domElem.style.width = nw;
+                    _this.domElem.style.width = (_this.relW) * scale + 'px';
                 }
                 if (_this.relH > 1) {
-                    var pad = (_this.gridPadding / 80) * (_this.relH - 1); //IMPROVE THIS get rid of hacked padding stuff
+                    var pad = (_this.gridPadding / scale) * (_this.relH - 1); //IMPROVE THIS get rid of hacked padding stuff
                     _this.relH = (_this.relH) + pad;
-                    var nw = (_this.relH) * scale + 'px';
-                    _this.domElem.style.height = nw;
+                    _this.domElem.style.height = (_this.relH) * scale + 'px';
                 }
                 //vWrap(_this.domElem, "<div class='hxContent'>", "</div>" );
             },
@@ -226,18 +223,15 @@
         positionItems: function() {
             var xCor = 0,
                 yCor = 0;
-            var thisRow = new Object();
+            var thisRow = {};
             var refRow;
             var refPointer = 0;
             console.log('---------');
             for (var i = 0, len = this.items.length; i < len; i++) {
                 if (typeof refRow !== 'undefined') {
-                    refPointer = xCor; //+refRow.offsetW;
+                    refPointer = xCor;
                     if (typeof refRow[refPointer] !== 'undefined') {
-                        if (0) { //Simple approach
-                            yCor = refRow[refPointer]['yCor'] + refRow[refPointer].relH * this.gridCellSize + this.gridPadding;
-                        } else if (refRow[refPointer].relH > 1) {
-
+                        if (refRow[refPointer].relH > 1) {
                             thisRow[xCor] = {
                                 relW: refRow[refPointer]['relW'],
                                 relH: Math.floor( refRow[refPointer]['relH'] ) - 1,
@@ -245,10 +239,13 @@
                                 xCor: refRow[refPointer]['xCor'],
                                 i: 'PseudoBlock'
                             }
+                            
                             yCor = refRow[refPointer]['yCor'] + this.gridCellSize + this.gridPadding;
 
-                            if (refRow[refPointer].i !== 'PseudoBlock' || refRow[refPointer]['yCor'] >= 2)
+                            if (refRow[refPointer].i !== 'PseudoBlock' || refRow[refPointer]['yCor'] >= 2){
                                 xCor = this.gridPadding + (this.gridCellSize * refRow[refPointer].relW) + refRow[refPointer]['xCor'];
+                                xCor = getNextBestFit(refRow,xCor,this.gridCellSize,this.gridPadding);
+                            }
 
                         } else {
                             yCor = refRow[refPointer]['yCor'] + refRow[refPointer].relH * this.gridCellSize + this.gridPadding;
@@ -267,16 +264,30 @@
                     i: i
                 }
                 xCor = this.gridPadding + (this.gridCellSize * this.items[i].relW) + this.items[i].xCor;
-
+                
                 if (xCor > (this.gridCellsWidth * this.gridCellSize)) {
                     xCor = 0;
                     refRow = thisRow;
-                    thisRow = new Object();
+                    thisRow = {};
                 }
             }
         }
     }
-
+    function getNextBestFit(refRow,newPointer,scale, pad){
+        var candidateBlock = refRow[newPointer];
+        if(typeof candidateBlock === 'undefined'){
+            return newPointer;
+        }
+        if(candidateBlock.relH >= 2){
+            var newX = candidateBlock.xCor + (candidateBlock.relW * scale) + pad ;
+            while(typeof refRow[newX] !== 'undefined' && refRow[newX].relH > 2){
+                candidateBlock = refRow[newX];
+                newX = candidateBlock.xCor + (candidateBlock.relW * scale) + pad ;
+            }
+            return newX;
+        }
+        return candidateBlock.xCor;
+    }
     function whichTransitionEvent() {
         var t;
         var el = document.createElement('fakeelement');
