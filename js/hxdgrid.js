@@ -18,7 +18,7 @@
         this.create(this, gridScale);
     };
     HxdItem.prototype = {
-            uid: 0,
+            index: 0,
             domElem: null,
             xCor: 0,
             yCor: 0,
@@ -101,9 +101,9 @@
             animateOver: function(xCor, yCor, domElem) {
                 var domElem = domElem || this.domElem;
 
-                domElem.style.WebkitTransition = "  all 0.7s ease ";
-                domElem.style.MozTransition = "  all 0.7s ease "; // ease-out// ease
-                domElem.style.transition = " all 1s ease  ";
+                //domElem.style.WebkitTransition = "  all 0.7s ease ";
+               // domElem.style.MozTransition = "  all 0.7s ease "; // ease-out// ease
+                //domElem.style.transition = " all 1s ease  ";
                 var xPx = xCor + 'px';
                 var yPx = yCor + 'px';
                 if (domElem.style.top < yCor) {
@@ -147,6 +147,14 @@
             }
         }
         /* Core Grid prototype */
+    //Possible reset
+    var HxdMap = function() {
+        
+        
+    };
+    HxdMap.prototype = {
+        
+    };
     var HxdGrid = function(domElem, options) {
         try {
             this.uid = gridIdCounter;
@@ -175,6 +183,7 @@
         gridCellSize: 80,
         gridCellsWidth: 0,
         gridPadding: 5,
+        volume:0,
         selector: '.hxdItem',
         hiddenItems: [],
         cellOptions: {},
@@ -196,6 +205,7 @@
             for (var i = 0, len = domArray.length; i < len; i++) {
                 domArray[i].innerHTML = i;
                 _this.items[i] = new HxdItem(domArray[i], _this.cellOptions, _this.gridCellSize);
+                _this.volume += _this.items[i].relH + _this.items[i].relW;
                 //_this.items[i].passNodeAttributes( domArray[i].attributes ); 
             };
             _this.positionItems();
@@ -213,6 +223,12 @@
                 //hxObj.orderSwap(data);
             }, false);
         },
+        _calculateHeight: function() {
+            var width = this.domElem.offsetWidth;
+            var height  = ((this.gridCellSize * this.gridCellSize) * this.volume)/ width;
+            this.domElem.style.height = height+"px";
+            //console.log(Math.ceil(height));
+        },
         resizeEvent: function() {
             console.log('resize');
             this.gridCellsWidth = Math.floor(this.domElem.offsetWidth / this.gridCellSize);
@@ -220,105 +236,140 @@
 
         },
         positionItems: function() {
+            var start = new Date().getTime();
             var xCor = 0,
                 yCor = 0;
             var thisRow = {};
-            var itemCopy = this.items;
-            var referenceRow;
+            var referenceObject;
             var refPointer = 0;
+            console.log(this);
             console.log('---------');
             for (var i = 0, len = this.items.length; i < len; i++) {
                 // Still needs cleanup and probably an algorithm rewrite and simplification
+                
                 if(i>0){
                     xCor = this.gridPadding + (this.gridCellSize * this.items[i-1].relW) + this.items[i-1].xCor;
                 }
                 if (xCor > (this.gridCellsWidth * this.gridCellSize)) {
                     xCor = 0;
-                    referenceRow = thisRow;
+                    referenceObject = thisRow;
+                    
                     thisRow = {};
+                    //console.log(Object.keys(referenceObject).length);
+                    //console.log(referenceObject);
                 }
-                
-                if (typeof referenceRow !== 'undefined') {
-                    var xy  = xyCalibration(referenceRow,xCor,this,thisRow,i);
+                 if (typeof referenceObject !== 'undefined') {
+                    var xy  = xyCalibration(referenceObject,xCor,this,thisRow,i);
                     xCor = xy[0];
                     yCor = xy[1];
-                    if ( checkNext(referenceRow,xCor,this,thisRow,i)){ console.log('swap '+i +' with'+(i+1));}
-                }
+                    if ( checkNext(referenceObject,xCor,this,thisRow,i)){ 
+                        console.log('swap '+i +' with'+(i+1));
+                        //generatePseudoReference(thisRow,referenceObject,xCor,this);
+                    }
+                }/**/
                 this.items[i].moveTo(xCor, yCor);
-               
-                thisRow[xCor] = {//Used as a reference point for the next element row
-                    relW: this.items[i].relW,
-                    relH: this.items[i].relH,
-                    yCor: this.items[i].yCor,
-                    xCor: this.items[i].xCor,
-                    i: i
-                }
+                generateItemReference(thisRow,this.items[i],(this.gridCellSize + this.gridPadding),i);
+                
             }
-            this.items = itemCopy;//restore original order
+            var end = new Date().getTime();
+            var time = end - start;
+            this._calculateHeight();
+            console.log('Execution time: ' + time);
         }
     }
-    function checkNext(referenceRow, refPointer, gridObject,thisRow,index){
+    function generateItemReference(refObject,item,offset,counter){
+        if(item.relW==1){
+            refObject[item.xCor] = {//Used as a reference point for the next element row
+                relW: item.relW,
+                relH: item.relH,
+                yCor: item.yCor,
+                xCor: item.xCor,
+                i: counter
+            }
+        }else{
+            var setL  = Math.floor(item.relW);
+            for(var k = 0; k < setL;k++ ){
+                var xTemp = item.xCor +  k * offset;
+                refObject[xTemp] = {//Used as a reference point for the next element row
+                    relW: 1,
+                    relH: item.relH,
+                    yCor: item.yCor,
+                    xCor: xTemp,
+                    i: counter
+                }
+            }
+        }
+    }
+    function checkNext(referenceObject, refPointer, gridObject,thisRow,index){
         var item = gridObject.items[index];
-        if (typeof referenceRow[refPointer] !== 'undefined') {
+        if (typeof referenceObject[refPointer] !== 'undefined') {
             if(item.relW > 1){   
                 for (var i = 1; i < item.relW;i++){
-                    var refPoint2 = referenceRow[refPointer].xCor + i*(gridObject.gridCellSize + gridObject.gridPadding);
-                    if(typeof referenceRow[refPoint2] !=='undefined' && referenceRow[refPoint2].relH >= 2){
-                         gridObject.items[index] = gridObject.items[index+1];
-                         gridObject.items[index+1] = item;
-                         thisRow[refPoint2] = {
-                            relW: referenceRow[refPoint2]['relW'],
-                            relH: Math.floor( referenceRow[refPoint2]['relH'] ) - 1,
-                            yCor: referenceRow[refPoint2]['yCor'] + (gridObject.gridCellSize + gridObject.gridPadding),
-                            xCor: referenceRow[refPoint2]['xCor'],
-                            i: 'pseudoB'
+                    var refPoint2 = referenceObject[refPointer].xCor + i*(gridObject.gridCellSize + gridObject.gridPadding);
+                    if(typeof referenceObject[refPoint2] !=='undefined' && referenceObject[refPoint2].relH >= 2){
+                        var next = index+1;
+                        while(true){//swap with the smallest nearby item
+                            if(gridObject.items[next].relW==1){
+                                gridObject.items[index] = gridObject.items[next];
+                                gridObject.items[next] = item;
+                                //generatePseudoReference(thisRow,referenceObject,refPoint2,gridObject);
+                                return true;
+                            }else{
+                                next++;
+                            }
                         }
-                         return true;
                     }
                 }
             }
         }
     }
-    function xyCalibration(referenceRow, refPointer, gridObject, thisRow, index){
+    function generatePseudoReference(targetObj,referenceObject,refPointer, gridObject,index){
+        var pseudoItem =  clone(referenceObject[refPointer]);
+        if(pseudoItem['relH']>2)
+            pseudoItem['relH'] = pseudoItem['relH'] - 1;
+            pseudoItem['yCor'] = pseudoItem['yCor'] + (gridObject.gridCellSize + gridObject.gridPadding);
+            pseudoItem['i'] = 'pseudoB'+index;
+        console.log(pseudoItem);
+        generateItemReference(targetObj,pseudoItem,(gridObject.gridCellSize + gridObject.gridPadding),'pseudoB');
+    }
+    function xyCalibration(referenceObject, refPointer, offset, thisRow){
+        var xCor=refPointer,
+            yCor = 0;
+            
+        if (typeof referenceObject[refPointer] !== 'undefined') {
+            generatePseudoReference(thisRow,referenceObject,xCor,gridObject,index);
+            if (referenceObject[refPointer]['relH'] >= 1.2){ 
+                xCor = gridObject.gridPadding + (gridObject.gridCellSize * referenceObject[refPointer].relW) + referenceObject[refPointer]['xCor'];
+                xCor = getNextBestFit(referenceObject,xCor,gridObject.gridCellSize,gridObject.gridPadding);
+            }
+        }
+    }
+    function xyCalibration(referenceObject, refPointer, gridObject, thisRow, index){
         /* NEEDS IMPROVEMENT */
         var xCor=refPointer,
             yCor = 0;
-        if (typeof referenceRow[refPointer] !== 'undefined') {
-            if (referenceRow[refPointer].relH > 1) {
-                thisRow[xCor] = {
-                    relW: referenceRow[refPointer]['relW'],
-                    relH: Math.floor( referenceRow[refPointer]['relH'] ) - 1,
-                    yCor: referenceRow[refPointer]['yCor'] + (gridObject.gridCellSize + gridObject.gridPadding),
-                    xCor: referenceRow[refPointer]['xCor'],
-                    i: 'pseudoB'
-                }
-                
-                yCor = referenceRow[refPointer]['yCor'] + gridObject.gridCellSize + gridObject.gridPadding;
-
-                if (referenceRow[refPointer].i !== 'pseudoB' || referenceRow[refPointer]['relH'] >= 2){
-                    xCor = gridObject.gridPadding + (gridObject.gridCellSize * referenceRow[refPointer].relW) + referenceRow[refPointer]['xCor'];
-                    xCor = getNextBestFit(referenceRow,xCor,gridObject.gridCellSize,gridObject.gridPadding);
-                }else{
-                    console.log(referenceRow[refPointer]);
-                }
-
-            } else {
-                yCor = referenceRow[refPointer]['yCor'] + referenceRow[refPointer].relH * gridObject.gridCellSize + gridObject.gridPadding;
+        if (typeof referenceObject[refPointer] !== 'undefined') {
+            generatePseudoReference(thisRow,referenceObject,xCor,gridObject,index);
+            if (referenceObject[refPointer]['relH'] >= 2){ 
+                xCor = gridObject.gridPadding + (gridObject.gridCellSize * referenceObject[refPointer].relW) + referenceObject[refPointer]['xCor'];
+                xCor = getNextBestFit(referenceObject,xCor,gridObject.gridCellSize,gridObject.gridPadding);
             }
+            yCor = referenceObject[refPointer]['yCor'] + gridObject.gridCellSize + gridObject.gridPadding;
         } else {
+            console.log('errr'+index);
             yCor = gridObject.items[index - 1].yCor;
         }
         return [xCor,yCor];
     }
-    function getNextBestFit(referenceRow,newPointer,scale, pad){
-        var candidateBlock = referenceRow[newPointer];
+    function getNextBestFit(referenceObject,newPointer,scale, pad){
+        var candidateBlock = referenceObject[newPointer];
         if(typeof candidateBlock === 'undefined'){
             return newPointer;
         }
         if(candidateBlock.relH >= 2){
             var newX = candidateBlock.xCor + (candidateBlock.relW * scale) + pad ;
-            while(typeof referenceRow[newX] !== 'undefined' && referenceRow[newX].relH > 2){
-                candidateBlock = referenceRow[newX];
+            while(typeof referenceObject[newX] !== 'undefined' && referenceObject[newX].relH > 2){
+                candidateBlock = referenceObject[newX];
                 newX = candidateBlock.xCor + (candidateBlock.relW * scale) + pad ;
             }
             return newX;
@@ -364,6 +415,14 @@
         return hxdGrids;
     }
 
+    function clone(obj) {
+        if(obj == null || typeof(obj) != 'object')
+            return obj;    
+        var temp = new obj.constructor(); 
+        for(var key in obj)
+            temp[key] = clone(obj[key]);    
+        return temp;
+    }
     function hxAttachWindowFunctions(hxdGrids) {
         window.getHxGridObj = function(id) {
             return hxdGrids[id];
