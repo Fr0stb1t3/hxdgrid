@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<META http-equiv="X-UA-Compatible" content="IE=10">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Hxdgrid</title>
+<script src="js/hxdgrid.js" type="text/javascript"></script>
+<style>
+.hxdItem {
+  width: 80px;
+  overflow: hidden;
+  height: 80px;
+  background: #AAA;
+  margin-left: 4px;
+  margin-bottom: 4px;
+  opacity: 0.7!important;
+}
+.hxdItem:nth-child(2n){
+	text-align:right;
+}
+.hxdItem:nth-child(3n){
+	text-indent: 10px;
+}
+
+</style>
+</head>
+<body> 
+<div id="hxOuter">
+    <div class="hxdItem" style="height: 400px;width: 160px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 160px;"  data-hxd-letter="c">Third Box  (letter sort) </div>
+    <div class="hxdItem" style="height: 240px;width: 360px;"  data-hxd-letter="d">Fourth Box (letter sort) </div>
+    <div class="hxdItem" style="width:200px;" data-hxd-letter="b">Second Box (letter sort) </div>
+    <div class="hxdItem" data-hxd-letter="a">First Box  (letter sort) </div>
+    <div class="hxdItem"  style="">Unordered box</div>
+    <div class="hxdItem"  style="width: 80px;">Unordered box</div>
+    <div class="hxdItem"  style="height: 340px;">Unordered box</div>
+    <div class="hxdItem" data-hxd-date="1.11.2015">Fourth Box (date sort) </div>
+    <div class="hxdItem" data-hxd-date="25.10.2015">Second Box (date sort) </div>
+    <div class="hxdItem" data-hxd-date="30.09.2015">First Box  (date sort) </div>
+    <div class="hxdItem" data-hxd-date="29.10.2015">Third Box  (date sort) </div>
+    <div class="hxdItem" style="Height:160px;">Unordered box</div>
+    <div class="hxdItem" style="height: 160px;width: 80px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;height:160px;">Unordered box</div>
+    <div class="hxdItem" style="height: 160px;width: 380px;">Unordered box</div>
+    <div class="hxdItem" style="height: 160px;width: 80px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 80px;">Unordered box</div>
+    <div class="hxdItem" style="height: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 80px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+    <div class="hxdItem" style="width: 165px;">Unordered box</div>
+</div>
+
+
+		
+	<script>
+			var options  = {
+				selector:  '.hxdItem'//default selector
+			};
+			hxdgrid('#hxOuter',options);/*
+		$(function() {
+			
+			var demoGrid = getHxGridObj(0); // Get the correct grid container object
+			var timer = setInterval(function() { 
+				  //demoGrid.randomShuffle();
+			}, 5000);/**
+			//var demoGrid3 = getHxItemById("155@0"); // Get the correct grid container object
+		
+		});*/
+	</script>
+</body>
+</html>
